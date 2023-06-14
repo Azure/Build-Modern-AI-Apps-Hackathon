@@ -1,0 +1,1 @@
+# openai-cosmos-db-hackathon
