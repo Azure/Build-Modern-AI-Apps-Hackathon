@@ -1,27 +1,28 @@
-# Challenge 3: What's Your Vector, Victor?
+# Challenge 3: Now We're Flying
 
-One critical component of the magic that makes the CosmicWorks chat interface work is the ability to search for products and accounts by their vector embeddings. When a user types a question into the chat interface, we need to create a vector embedding for the question, then search for the most similar vector embeddings for products and accounts. The vector embeddings for products and accounts are stored in a vector database, allowing us to return relevant documents that get sent to Azure OpenAI's completions endpoint.
+With the critical components in place, we're ready to tie everything into the chat interface. When a user types a question into the chat interface, we need to create a vector embedding for the question, then search for the most similar vector embeddings for products and accounts. The vector embeddings for products and accounts are stored in a vector database, allowing us to return relevant documents that get sent to Azure OpenAI's completions endpoint. In order to return a human-friendly response to the user, we need to use the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. Furthermore, we need to keep a history of the user's questions and the responses that were generated so that we can use this data to train the model in the future and also allow users to review their past conversations.
 
 ## Challenge
 
 Your team must:
 
-1. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface.
-2. Create a process that automatically generates vector embeddings for all of the products and accounts in the Cosmos DB database and stores them in the vector database.
+1. Update the chat interface to initiate the chat-based workflow you and your team have designed.
+2. Invoke the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. The system prompt should instruct the model to do the following:
+   1. Tell it that it is an intelligent assistant for a bike company.
+   2. Tell it that it is responding to user questions about products, product categories, customers, and sales order information provided in JSON format embedded below.
+   3. Only answer questions related to the information provided.
+   4. Not to "make up" information and to respond that it does not know the answer to suggest to the user to search for it themselves.
+3. Store the user's questions and the responses that were generated so that we can use this data to train the model in the future and also allow users to review their past conversations.
 
 ### Hints
 
-- Think about how you build the logic for accessing the Azure OpenAI service to perform the vector embeddings. You will use this same logic layer to perform other Azure OpenAI tasks in later challenges.
-- Think about how you can use the Cosmos DB Change Feed to trigger the creation of vector embeddings for new/updated products and accounts.
+- List any hints here.
 
 ### Success Criteria
 
 To complete this challenge successfully, you must:
 
-- Generate vector embeddings of a sufficiently high dimensionality that is supported by the Azure OpenAI service as well as your vector database.
-- Encapsulate the embedding logic within a service layer that can be used by other components of the CosmicWorks chat interface, as well as a future REST API service.
-- Create a process that automatically generates vector embeddings for all of the products and accounts in the Cosmos DB database and stores them in the vector database.
-- Demonstrate to your coach a successful search for products and accounts by vector embeddings. This does not necessarily have to originate from the chat interface at this point.
+- List success criteria here
 
 ### Resources
 
@@ -29,4 +30,5 @@ To complete this challenge successfully, you must:
 
 ## Explore Further
 
-Add more context here.
+Add relevant information here.
+
