@@ -1,29 +1,38 @@
 # Challenge 5: It's All About the Payload, The Sequel
 
-What you've built so far is a pattern you can use with any type of data. You've built a data pipeline that can be used to load data from a storage account into Cosmos DB, and you've built a process that can be used to generate vector embeddings for products and accounts. Now it's time to test your pattern by loading a completely new data type.
+What you've built so far is a pattern you can use with any type of data. You've built a process that can be used to load data from a storage account into Cosmos DB and then run a process that stores both documents and vector embeddings in Azure Cognitive Search. Now it's time to test your pattern by loading a completely new type of data.
+
+The solution provided by Cosmicworks is specific to Product, Customer and SalesOrder data. In this challenge you will extend the solution so that it can handle any type of data in the JSON format.
 
 ## Challenge
 
 Your team must:
 
-1. Create a new index in the vector database for the new data type.
-2. Load the new data type into Cosmos DB.
-3. Use the chat interface to ask questions about the new data type.
+1. Create a container named `sourcedata` in Cosmos DB.
+2. Create a new entity for the generic JSON document data type in the starter project.
+3. Create a new change feed processor that monitors the `sourcedata` container and works with instances of your new generic data type.
+4. Load data of the new type into Cosmos DB.
+2. Use the chat interface to ask questions about the new data type.
 
 ### Hints
 
-- Hint
+- With the starter solution supplied by CosmicWorks open in Visual Studio, expand the VectorSearchAiAssistant.Service project, Models, Search and take a look at Product.cs. This class is required to process the data with the Cosmos DB change feed and is also used as the schema for the document added to the Cognitive Search index. You will need to define an entity similar to this for your new type of data. You should have two fields in this class: id and description (which will store the raw JSON of the ingested document).
+- Extend the implementation of the change feed processor located in the same project under Services, CosmosDbService.cs to use your new data type. 
+    - You need to add a new change feed processor in `StartChangeFeedProcessors`.
+    - You need to add a new change feed handler similar to `ProductChangeFeedHandler`
+- In SemanticKernelRAGService.cs update the InitializeMemory function to include your new generic type that will be used to initialize the Search index. 
 
 ### Success Criteria
 
 To complete this challenge successfully, you must:
 
-- Criteria
+- Show your coach the new data that you created and then your chat history showing how it responded using the new data as context. 
+- Try to locate the new product or customer data you loaded in the Cognitive Search Index and in Cosmos DB.
 
 ### Resources
 
-- Link
+- [Change feed processor in Azure Cosmos DB](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-processor?tabs=dotnet)
 
 ## Explore Further
 
-More info.
+- [Reading from the change feed](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/read-change-feed)

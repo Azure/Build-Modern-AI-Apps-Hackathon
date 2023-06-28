@@ -10,7 +10,7 @@ CosmicWorks has done some research, and they would like to use Microsoft Semanti
 
 Your team must:
 
-1. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. 
+1. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. Cosmicworks has provided the data for you to start with, listed in the resources below.
 2. Create a vector index in Azure Cognitive Search. The had some ideas on this that they provided in the starter project.
 2. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. They have provided a starter template for you that they had created for another effort.
 3. Verify that the data was loaded into Cosmos DB and Cognitive Search.
@@ -35,9 +35,11 @@ To complete this challenge successfully, you must:
 
 ### Resources
 
-- [Semantic Kernel](https://learn.microsoft.com/semantic-kernel/overview/)
+- [Sample Customer Data](https://cosmosdbcosmicworks.blob.core.windows.net/cosmic-works-small/customer.json)
+- [Sample Product Data](https://cosmosdbcosmicworks.blob.core.windows.net/cosmic-works-small/product.json)
+- [Azure Cosmos DB Desktop Data Migration Tool](https://github.com/AzureCosmosDB/data-migration-desktop-tool)
 
 ## Explore Further
 
 - [Understanding embeddings](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/understand-embeddings)
-
+- [Semantic Kernel](https://learn.microsoft.com/semantic-kernel/overview/)

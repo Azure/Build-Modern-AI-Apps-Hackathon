@@ -2,7 +2,11 @@
 
 With the critical components in place, we're ready to tie everything into the chat interface. When a user types a question into the chat interface, we need to create a vector embedding for the question, then search for the most similar vector embeddings for products and accounts, and return the relevant documents that get sent to Azure OpenAI's completions endpoint. 
 
-In order to return a human-friendly response to the user, we need to use the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. Furthermore, we need to keep a history of the user's questions and the responses that were generated so that we can use this data to train the model in the future and also allow users to review their past conversations.
+In order to return a human-friendly response to the user, we need to use the completions endpoint to generate a response based on the most relevant documents and an instructional system-level prompt. Furthermore, we need to keep a history of the user's questions and the responses that were generated so that reload the chat in the future.
+
+There are several approaches to generating prompts for the Azure OpenAI service. One of the most popular approaches is to use a technique called *prompt engineering* to author prompts that are used to generate completions. Prompt engineering is an iterative process that involves authoring prompts, generating completions, and evaluating the results. The results of the evaluation are used to generate new prompts, and the process repeats until the desired results are achieved. 
+
+The starter solution uses Semantic Kernel for prompt engineering. This challenge is about experimenting with system prompts to impact how the completions model works.
 
 ## Challenge
 
@@ -21,6 +25,11 @@ Your team must:
 ### Hints
 
 - Think carefully about the system prompt, about how it should respond, what knowledge it is allowed to use when reasoning to create a response, what subjects it is allowed to respond to and importantly what it should not respond to.
+- Experiment with eliciting different response formats from the completions model:
+   - Respond with a single number
+   - Respond with a bulleted lists
+   - Respond using simpler syntax (e.g. explain it like I'm five)
+- Have the agent reject off topic prompts from the user.
 
 ### Success Criteria
 
@@ -33,10 +42,9 @@ To complete this challenge successfully, you must:
 
 ### Resources
 
-- [Writing Effective System Prompts](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/system-message)
-
+- [Intro to prompt engineering](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/prompt-engineering)
 
 ## Explore Further
 
-- [Prompt engineering techniques](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/advanced-prompt-engineering?pivots=programming-language-chat-completions)
+- [Writing Effective System Prompts](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/system-message)
 
