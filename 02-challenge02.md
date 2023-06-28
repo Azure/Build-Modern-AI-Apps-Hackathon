@@ -1,17 +1,21 @@
 # Challenge 2: It's All About the Payload
 
-CosmicWorks has years of product, customer, and sales data that they exported to an Azure storage account. They want to load this data into the Azure Cosmos DB account for a future migration of their e-Commerce site to Azure, but also for the POC of the chat interface. They also want to load the data into the vector database so that they can search for product and account information by the vector embeddings.
+CosmicWorks has years of product, customer, and sales data that they exported to an Azure storage account. They want to load this data into the Azure Cosmos DB account for a future migration of their e-Commerce site to Azure, but also for the POC of the chat interface. They also want to load the data into Azure Cognitive Search so that they can search for product and account information by the vector embeddings.
 
-One critical component of the magic that makes the CosmicWorks chat interface work is the ability to search for products and accounts by their vector embeddings. When a user types a question into the chat interface, we need to create a vector embedding for the question, then search for the most similar vector embeddings for products and accounts. The vector embeddings for products and accounts are stored in a vector database, allowing us to return relevant documents that get sent to Azure OpenAI's completions endpoint.
+One critical component of the magic that makes the CosmicWorks chat interface work is the ability to search for products and accounts by their vector embeddings. When a user types a question into the chat interface, we need to create a vector embedding for the question, then search for the most similar vector embeddings of products and accounts, and then return those similar documents. The vector embeddings for products and accounts are stored in a vector database, allowing us to return relevant context documents that get sent to Azure OpenAI's completions endpoint.
+
+CosmicWorks has done some research, and they would like to use Microsoft Semantic Kernel as the framework the code uses to orchestrate calls to the Azure OpenAI embeddings and completions endpoints. They've provided some incomplete starter code to give you and idea of what they are looking for.
 
 ## Challenge
 
 Your team must:
 
-1. Find an efficient and repeatable way to load data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data.
-2. Verify that the data was loaded into Cosmos DB.
-3. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface.
-4. Create a process that automatically generates vector embeddings for all of the products and accounts in the Cosmos DB database and stores them in the vector database.
+1. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. 
+2. Create a vector index in Azure Cognitive Search. The had some ideas on this that they provided in the starter project.
+2. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. They have provided a starter template for you that they had created for another effort.
+3. Verify that the data was loaded into Cosmos DB and Cognitive Search.
+4. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface. Use Semantic Kernel as they stubbed out in the project to make this call.
+
 
 ### Hints
 
@@ -31,8 +35,9 @@ To complete this challenge successfully, you must:
 
 ### Resources
 
-- Links to tool options
+- [Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
 
 ## Explore Further
 
-Add some context to the challenge and technologies used.
+- [Understanding embeddings](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/understand-embeddings)
+
