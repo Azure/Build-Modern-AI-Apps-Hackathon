@@ -7,30 +7,36 @@ In order to return a human-friendly response to the user, we need to use the com
 ## Challenge
 
 Your team must:
-
-1. Update the chat interface to initiate the chat-based workflow you and your team have designed.
-2. Invoke the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. The system prompt should instruct the model to do the following:
+ 
+1. Create the system prompt that defines the assistant's behavior. The system prompt should instruct the model to do the following:
    1. Tell it that it is an intelligent assistant for a bike company.
    2. Tell it that it is responding to user questions about products, product categories, customers, and sales order information provided in JSON format embedded below.
    3. Only answer questions related to the information provided.
    4. Not to "make up" information and to respond that it does not know the answer to suggest to the user to search for it themselves.
-3. Store the user's questions and the responses that were generated so that we can use this data to train the model in the future and also allow users to review their past conversations.
+2. Upload the system prompt to the Storage Account.
+3. Update the chat interface to initiate the chat-based workflow you and your team have implemented.
+4. Invoke the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. The system prompt should be included with every completions call, but not repeated in the chat history.
+5. Store the user's questions and the responses that were generated so we can reload them in the future.
 
 ### Hints
 
-- List any hints here.
+- Think carefully about the system prompt, about how it should respond, what knowledge it is allowed to use when reasoning to create a response, what subjects it is allowed to respond to and importantly what it should not respond to.
 
 ### Success Criteria
 
 To complete this challenge successfully, you must:
 
-- List success criteria here
+- Demonstrate to your coach that you can load the system prompt from the storage account.
+- Interact with the assistant thru the web based chat interface.
+- View the chat messages saved to the container in Cosmos DB and verify that your new User and Assistant messages are appearing.
+- Try a variety of user prompts to see how the assistant responds.
 
 ### Resources
 
-- Add links here
+- [Writing Effective System Prompts](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/system-message)
+
 
 ## Explore Further
 
-Add relevant information here.
+- [Prompt engineering techniques](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/advanced-prompt-engineering?pivots=programming-language-chat-completions)
 

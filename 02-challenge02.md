@@ -35,9 +35,9 @@ To complete this challenge successfully, you must:
 
 ### Resources
 
-- [Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/overview/)
+- [Semantic Kernel](https://learn.microsoft.com/semantic-kernel/overview/)
 
 ## Explore Further
 
-- [Understanding embeddings](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/understand-embeddings)
+- [Understanding embeddings](https://learn.microsoft.com/azure/cognitive-services/openai/concepts/understand-embeddings)
 
