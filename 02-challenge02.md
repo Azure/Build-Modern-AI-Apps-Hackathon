@@ -12,9 +12,9 @@ Your team must:
 
 1. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. Cosmicworks has provided the data for you to start with, listed in the resources below.
 2. Create a vector index in Azure Cognitive Search. The had some ideas on this that they provided in the starter project.
-2. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. They have provided a starter template for you that they had created for another effort.
-3. Verify that the data was loaded into Cosmos DB and Cognitive Search.
-4. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface. Use Semantic Kernel as they stubbed out in the project to make this call.
+3. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. They have provided a starter template for you that they had created for another effort.
+4. Verify that the data was loaded into Cosmos DB and Cognitive Search.
+5. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface. Use Semantic Kernel as they stubbed out in the project to make this call.
 
 
 ### Hints

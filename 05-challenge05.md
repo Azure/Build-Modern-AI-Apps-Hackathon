@@ -12,7 +12,7 @@ Your team must:
 2. Create a new entity for the generic JSON document data type in the starter project.
 3. Create a new change feed processor that monitors the `sourcedata` container and works with instances of your new generic data type.
 4. Load data of the new type into Cosmos DB.
-2. Use the chat interface to ask questions about the new data type.
+5. Use the chat interface to ask questions about the new data type.
 
 ### Hints
 
