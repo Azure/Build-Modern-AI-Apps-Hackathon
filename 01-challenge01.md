@@ -20,8 +20,9 @@ For this challenge, you will deploy the services into the landing zone in prepar
 Your team must:
 
 1. Clone the Starter repo with the Blazor web application and starter artifacts 
-2. Deploy the Azure services needed to support the chat interface
-3. Set up your development environment
+2. Set up your development environment
+3. Deploy the Azure services needed to support the chat interface
+
 
 ### Hints
 
