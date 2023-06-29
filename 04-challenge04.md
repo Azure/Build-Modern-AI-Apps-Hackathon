@@ -12,7 +12,7 @@ Your team must:
 ### Hints
 
 - Cosmicworks has provided the JSON files containing the initial products and customers that you loaded into the system, take one of these and modify it to create some new products or customers and uploaded it to the storage account from where you loaded the initial data and run your data loading process. 
-- Experiment using prompts  different response formats from the completions model:
+- Experiment using prompts to elicit different response formats from the completions model:
    - Respond with a single number or with one or two words
    - Respond with a bulleted lists or formatted a certain way
    - Respond using simpler syntax (e.g. explain it like I'm five)

@@ -11,25 +11,25 @@ The starter solution uses Semantic Kernel for prompt engineering. This challenge
 ## Challenge
 
 Your team must:
- 
-1. Create the system prompt that defines the assistant's behavior. The system prompt should instruct the model to do the following:
+
+1. Use the Azure OpenAI service to create vector embeddings for the user prompt that is entered into the chat interface. Use Semantic Kernel as they stubbed out in the project to make this call. 
+2. Create the system prompt that defines the assistant's behavior. CosmicWorks has provided you with a starter prompt located under VectorSearchAiAssistant\SystemPrompts\RetailAssistant\Default.txt. You should add to the content in this file. The system prompt should instruct the model to do the following:
    1. Tell it that it is an intelligent assistant for a bike company.
    2. Tell it that it is responding to user questions about products, product categories, customers, and sales order information provided in JSON format embedded below.
    3. Only answer questions related to the information provided.
    4. Not to "make up" information and to respond that it does not know the answer to suggest to the user to search for it themselves.
-2. Upload the system prompt to the Storage Account.
-3. Update the chat interface to initiate the chat-based workflow you and your team have implemented.
-4. Invoke the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. The system prompt should be included with every completions call, but not repeated in the chat history.
-5. Store the user's questions and the responses that were generated so we can reload them in the future.
+   5. Make sure the prompt ends with "Text of relevant information:" as after that the system will inject context data and chat history. 
+3. Upload the system prompt file to the Azure Storage Account, place it under the path `system-prompt / RetailAssistant` overwriting the file that is there.
+4. Update the chat interface to initiate the chat-based workflow you and your team have implemented.
+5. Invoke the completions endpoint to generate a response based on the most relevant documents and some instructional system-level prompts. The system prompt should be included with every completions call, but not repeated in the chat history.
+6. Store the user's questions and the responses that were generated so the system can reload them in the future.
 
 ### Hints
 
+- CosmicWorks has provided starter code for you. Search for the two methods with `TODO: Challenge 3` and complete them as instructed.
 - Think carefully about the system prompt, about how it should respond, what knowledge it is allowed to use when reasoning to create a response, what subjects it is allowed to respond to and importantly what it should not respond to.
-- Experiment with eliciting different response formats from the completions model:
-   - Respond with a single number
-   - Respond with a bulleted lists
-   - Respond using simpler syntax (e.g. explain it like I'm five)
-- Have the agent reject off topic prompts from the user.
+- Have the agent reject off topic prompts from the user (such as asks to tell a joke).
+
 
 ### Success Criteria
 
