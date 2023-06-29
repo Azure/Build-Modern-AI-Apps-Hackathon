@@ -9,18 +9,18 @@ The solution provided by Cosmicworks is specific to Product, Customer and SalesO
 Your team must:
 
 1. Create a container named `sourcedata` in Cosmos DB.
-2. Create a new entity for the generic JSON document data type in the starter project.
-3. Create a new change feed processor that monitors the `sourcedata` container and works with instances of your new generic data type.
+2. Create a new entity for the JSON document data type in the starter project.
+3. Create a new change feed processor that monitors the `sourcedata` container and works with instances of your new data type.
 4. Load data of the new type into Cosmos DB.
 5. Use the chat interface to ask questions about the new data type.
 
 ### Hints
 
-- With the starter solution supplied by CosmicWorks open in Visual Studio, expand the VectorSearchAiAssistant.Service project, Models, Search and take a look at Product.cs. This class is required to process the data with the Cosmos DB change feed and is also used as the schema for the document added to the Cognitive Search index. You will need to define an entity similar to this for your new type of data. You should have two fields in this class: id and description (which will store the raw JSON of the ingested document).
+- With the starter solution supplied by CosmicWorks open in Visual Studio, expand the VectorSearchAiAssistant.Service project, Models, Search and take a look at Product.cs. This class is required to process the data with the Cosmos DB change feed and is also used as the schema for the document added to the Cognitive Search index. You will need to define an entity similar to this for your new type of data.
 - Extend the implementation of the change feed processor located in the same project under Services, CosmosDbService.cs to use your new data type. 
     - You need to add a new change feed processor in `StartChangeFeedProcessors`.
     - You need to add a new change feed handler similar to `ProductChangeFeedHandler`
-- In SemanticKernelRAGService.cs update the InitializeMemory function to include your new generic type that will be used to initialize the Search index. 
+- In SemanticKernelRAGService.cs update the setup of the `_memoryTypes` in the SemanticKernelRAGService constructor to include your new type that will be used to initialize the Search index. 
 
 ### Success Criteria
 

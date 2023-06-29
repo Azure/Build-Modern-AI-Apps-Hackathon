@@ -75,6 +75,9 @@ public class ChatService : IChatService
     /// </summary>
     public async Task<Completion> GetChatCompletionAsync(string? sessionId, string userPrompt)
     {
+        /* TODO: Challenge 3. 
+        * Complete the todo tasks as instructed by the comments
+        */
         ArgumentNullException.ThrowIfNull(sessionId);
 
         // Retrieve conversation, including latest prompt.
@@ -88,11 +91,16 @@ public class ChatService : IChatService
         //(string completion, int promptTokens, int responseTokens) = await_openAiService.GetChatCompletionAs ync(sessionId, conversation, retrievedDocuments);
         var result = await _ragService.GetResponse(userPrompt, messages);
 
+        // TODO: Complete the following lines to create the promptMessage and completionMessage objects
+        // that will be persisted to Cosmos DB
+        var promptMessage = new Message(sessionId, "", 0, "", null, null);
+        var completionMessage = new Message(sessionId, "", 0, "", null, null);
+
+
         // Add to prompt and completion to cache, then persist in Cosmos as transaction 
-        var promptMessage = new Message(sessionId, nameof(Participants.User), result.UserPromptTokens, userPrompt, result.UserPromptEmbedding, null);
-        var completionMessage = new Message(sessionId, nameof(Participants.Assistant), result.ResponseTokens, result.Completion, null, null);        
         await AddPromptCompletionMessagesAsync(sessionId, promptMessage, completionMessage);
 
+        // The completion result is what is displayed in the client UI
         return new Completion { Text = result.Completion };
     }
 

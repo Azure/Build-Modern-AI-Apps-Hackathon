@@ -95,14 +95,7 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
 
                 // TODO: Create the Cognitive Search vector SearchFields for the list of distinct fields across all types
                 // Make sure that all fields are searchable, have the appropriate dimensions (1536) 
-                // and use the configuration specified by the vectoSearchConfigName variable.
-                //DELETE allFields.Add(
-                //    new SearchField(VectorFieldName, SearchFieldDataType.Collection(SearchFieldDataType.Single))
-                //    {
-                //        IsSearchable = true,
-                //        Dimensions = ModelDimensions,
-                //        VectorSearchConfiguration = vectorSearchConfigName
-                //    });
+                // and use the configuration specified by the vectorSearchConfigName variable.
                 //allFields.Add(
                 //    new SearchField(VectorFieldName, SearchFieldDataType.Collection(SearchFieldDataType.Single))
                 //    {
@@ -111,21 +104,10 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
                 //        VectorSearchConfiguration = vectorSearchConfigName
                 //    });
 
-                // TODO: Replace the following line with the TODO that follow.
+                // TODO: Replace the following line with the TODO that follows.
                 SearchIndex searchIndex = new(_searchIndexName);
                 // TODO: Create the SearchIndex to use the VectorSearchAlgorithmConfiguration with
                 // the vectorSearchConfigName and the "hnsw" kind
-                //DELETE SearchIndex searchIndex = new(_searchIndexName)
-                //{
-                //    VectorSearch = new()
-                //    {
-                //        AlgorithmConfigurations =
-                //        {
-                //            new VectorSearchAlgorithmConfiguration(vectorSearchConfigName, "hnsw")
-                //        }
-                //    },
-                //    Fields = allFields
-                //};
                 //SearchIndex searchIndex = new(_searchIndexName)
                 //{
                 //    VectorSearch = new()

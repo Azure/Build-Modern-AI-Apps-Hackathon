@@ -19,12 +19,13 @@ For this challenge, you will deploy the services into the landing zone in prepar
 
 Your team must:
 
-1. Deploy the Azure services needed to support the chat interface
-2. Clone the repo with the Blazor web application and starter artifacts
+1. Clone the Starter repo with the Blazor web application and starter artifacts 
+2. Deploy the Azure services needed to support the chat interface
 3. Set up your development environment
 
 ### Hints
 
+- CosmicWorks has provided you a script to deploy the foundation of your Azure environment. See the instructions in the README.md of the repo. 
 - You will need to deploy the following Azure services within a new Resource Group:
   - Azure Cosmos DB
   - Azure OpenAI
@@ -43,7 +44,7 @@ To complete this challenge successfully, you must:
   - `completions` with the `gpt-35-turbo` model
   - `embeddings` with the `text-embedding-ada-002` model
 - Deploy Azure Cognitive Search in the basic tier. 
-- Deploy Azure Kubernetes Service in the basic tier.
+- Deploy Azure Kubernetes Service in the basic tier, Azure Container Registry and Azure Storage Account will be deployed by the script.
 
 
 ### Resources

@@ -107,6 +107,7 @@ namespace VectorSearchAiAssistant.Service.Services
 
                 // TODO: Following the same pattern as above, create a change feed processor 
                 // that listens for new JsonDocument instances added to the customer container.
+                // Note that the function CustomerChangeFeedHandler has been started for you below.
                 // ...add your code here...
                 _customersInitialized = true;
             }
@@ -148,6 +149,10 @@ namespace VectorSearchAiAssistant.Service.Services
             IReadOnlyCollection<JsonDocument> changes,
             CancellationToken cancellationToken)
         {
+            /* TODO: Challenge 2.  
+             * Uncomment and complete the following lines as instructed.
+             */
+
             if (changes.Count == 0)
                 return;
 

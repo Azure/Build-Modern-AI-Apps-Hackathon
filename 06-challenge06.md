@@ -1,8 +1,8 @@
 # Challenge 6: The Colonel Needs a Promotion
 
-In this challenge, you and your team will add new capability by creating a new plugin for Semantic Kernel.
+In this challenge, you and your team will add a new capability by creating a new plugin for Semantic Kernel.
 
-In the previous challenge where you exprimented with prompt engineering, you may have observed that there are some things the large language model does not do well consistently. One example of this is dealing with numbers and doing math operations. Sometimes the model will do it correctly. Other times, such as when the numbers differ by an order of magnitude it may suggest things like the smaller number is bigger than the larger one. 
+In the previous challenge where you experimented with prompt engineering, you may have observed that there are some things the large language model do not do well consistently. One example of this is dealing with numbers and performing math operations. Sometimes the model will do it correctly. Other times, such as when the numbers differ by an order of magnitude it may suggest things like the smaller number is bigger than the larger one. 
 
 Your challenge is to pick a numeric or math problem and instead of relying the on the large language model to perform the calculation, you will make the model smart enough to call out to code that will perform the calculations with precision and then return the result back to the model. 
 ## Challenge
