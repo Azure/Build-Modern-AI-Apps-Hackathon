@@ -20,6 +20,9 @@ This hackathon will challenge you and your team to launch a POC of a chat interf
 - Azure Subscription
 - Visual Studio
 - .NET 7 SDK
+- Docker Desktop
+- Azure CLI 2.49.0
+- Helm v3.11.1 or greater - https://helm.sh/
 - Subscription with access to the Azure OpenAI service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
 
 ## Setting up your development environment
