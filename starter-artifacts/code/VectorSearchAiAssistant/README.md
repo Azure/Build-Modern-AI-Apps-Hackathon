@@ -24,6 +24,11 @@ The application frontend is a Blazor application with Intelligent Agent UI funct
 
 - Azure Subscription
 - Subscription access to Azure OpenAI service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
+- Visual Studio 2022
+- .NET 7 SDK
+- Docker Desktop
+- Azure CLI 2.49.0
+- Helm v3.11.1 or greater - https://helm.sh/
 
 ### Deployment
 
@@ -34,40 +39,26 @@ git clone https://github.com/AzureCosmosDB/VectorSearchAiAssistant
 git checkout cognitive-search-vector
 ```
 
+#### Standard Deployments
+
 Run the following script to provision the infrastructure and deploy the API and frontend. This will provision all of the required infrastructure, deploy the API and web app services into AKS, and import data into Cosmos.
 
 ```pwsh
-./scripts/Unified-Deploy.ps1 -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
+./scripts/Unified-Deploy.ps1 -resourceGroup <resource-group-name> `
+                             -location <location> `
+                             -subscription <subscription-id>
 ```
+#### Deployments using an existing OpenAI service
 
-### Enabling/Disabling Deployment Steps
+For deployments that need to use an existing OpenAI service, run the following from the `deploy/powershell`.  This will provision all of the necessary infrastruction except the Azure OpenAI service and will deploy the function apps, the frontend, and Synapse artifacts.
 
-The following flags can be used to enable/disable specific deployment steps in the `Unified-Deploy.ps1` script.
-
-| Parameter Name | Description |
-|----------------|-------------|
-| stepDeployArm | Enables or disables the provisioning of resources in Azure via ARM templates (located in `./arm`). Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/Deploy-Arm-Azure.ps1` script.
-| stepBuildPush | Enables or disables the build and push of Docker images to the Azure Container Registry in the target resource group. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/BuildPush.ps1` script.
-| stepDeployCertManager | Enables or disables the Helm deployment of a LetsEncrypt capable certificate manager to the AKS cluster. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/DeployCertManager.ps1` script.
-| stepDeployTls | Enables or disables the Helm deployment of the LetsEncrypt certificate request resources to the AKS cluster. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/PublishTlsSupport.ps1` script.
-| stepDeployImages | Enables or disables the Helm deployment of the ChatServiceWebApi and Search services to the AKS cluster. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/Deploy-Images-Aks.ps1` script.
-| stepUploadSystemPrompts | Enables or disables the upload of OpenAI system prompt artifacts to a storage account in the target resource group. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/UploadSystemPrompts.ps1` script.
-| stepImportData | Enables or disables the import of data into a Cosmos account in the target resource group using the Data Migration Tool. Valid values are 0 (Disabled) and 1 (Enabled). See the `scripts/Import-Data.ps1` script.
-| stepLoginAzure | Enables or disables interactive Azure login. If disabled, the deployment assumes that the current Azure CLI session is valid. Valid values are 0 (Disabled). 
-
-Example command:
 ```pwsh
-cd deploy/powershell
-./Unified-Deploy.ps1 -resourceGroup myRg `
-                     -subscription 0000... `
-                     -stepLoginAzure 0 `
-                     -stepDeployArm 0 `
-                     -stepBuildPush 1 `
-                     -stepDeployCertManager 0 `
-                     -stepDeployTls 0 `
-                     -stepDeployImages 1 `
-                     -stepUploadSystemPrompts 0 `
-                     -stepImportData 0
+.\Unified-Deploy.ps1 -resourceGroup <resource-group-name> `
+                     -location <location> `
+                     -subscription <subscription-id> `
+                     -openAiName <openAi-service-name> `
+                     -openAiRg <openAi-resource-group-name> `
+                     -openAiDeployment <openAi-completions-deployment-name>
 ```
 
 ### Quickstart
@@ -148,11 +139,6 @@ Change Feed capability to dynamically add and remove products to the vector data
 <p align="center">
     <img src="img/socks.png" width="100%">
 </p>
-
-## Clean-up
-
-Delete the resource group to delete all deployed resources.
-
 
 ## Run locally and debug
 
@@ -270,6 +256,10 @@ Also, make sure the newly created `appsettings.Development.json` file is copied 
 You are now ready to start debugging the solution locally. To do this, press `F5` or select `Debug > Start Debugging` from the menu.
 
 **NOTE**: With Visual Studio, you can also use alternate ways to manage the secrets and configuration. For example, you can use the `Manage User Secrets` option from the context menu of the `ChatWebServiceApi` project to open the `secrets.json` file and add the configuration values there.
+
+## Clean-up
+
+Delete the resource group to delete all deployed resources.
 
 ## Resources
 
