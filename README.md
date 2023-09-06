@@ -9,7 +9,7 @@ The scenario centers around a consumer retail "Intelligent Agent" that allows us
 This hackathon will challenge you and your team to launch a POC of a chat interface where users can interact with a virtual agent to find product and account information. Through the course of the hackathon, you will modify an existing application to do the following:
 
 - Store the chat messages in an Azure Cosmos DB database, grouped by chat sessions
-- Use Azure OpenAI to create vector embeddings and chat completions
+- Use Azure OpenAI Service to create vector embeddings and chat completions
 - Use Azure Cognitive Search as a vector database to search for product and account information by the vector embeddings
 - Load up existing product and account information into Azure Cosmos DB and the Azure Cognitive Search vector index
 - Create a process that manages the conversation flow, vectorization, search, data handling, and response generation
@@ -23,7 +23,7 @@ This hackathon will challenge you and your team to launch a POC of a chat interf
 - Docker Desktop
 - Azure CLI 2.49.0
 - Helm v3.11.1 or greater - https://helm.sh/
-- Subscription with access to the Azure OpenAI service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
+- Subscription with access to the Azure OpenAI Service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
 
 ## Setting up your development environment
 
