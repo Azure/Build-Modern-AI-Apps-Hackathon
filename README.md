@@ -1,4 +1,4 @@
-# Azure Cosmos DB & OpenAI: Bring Your Own Data to ChatGPT Hackathon
+# Azure Cosmos DB & Azure OpenAI Service: Bring Your Own Data to ChatGPT Hackathon
 
 CosmicWorks has big plans for their retail site. They're eager to launch a POC of a simple chat interface where users can interact with a virtual agent to find product and account information.
 
