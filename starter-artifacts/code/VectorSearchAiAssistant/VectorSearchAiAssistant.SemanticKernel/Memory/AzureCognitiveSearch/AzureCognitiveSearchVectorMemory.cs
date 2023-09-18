@@ -17,8 +17,9 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Azure.Core.Serialization;
 using System.Reflection.Metadata;
+using VectorSearchAiAssistant.SemanticKernel.TextEmbedding;
 
-namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
+namespace VectorSearchAiAssistant.SemanticKernel.Memory.AzureCognitiveSearch
 {
     /// <summary>
     /// Semantic Memory implementation using Azure Cognitive Search.
@@ -64,11 +65,17 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
             _textEmbedding = textEmbedding;
         }
 
+        /// <summary>
+        /// Initialize the memory by creating the underlying Azure Cognitive Search index.
+        /// </summary>
+        /// <param name="typesToIndex">The object types supported by the index.</param>
+        /// <returns></returns>
         public async Task Initialize(List<Type> typesToIndex)
         {
             /* TODO: Challenge 2.  
              * Uncomment and complete the following lines as instructed.
              */
+
             try
             {
                 var indexNames = await _adminClient.GetIndexNamesAsync().ToListAsync().ConfigureAwait(false);
@@ -81,13 +88,13 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
 
                 var vectorSearchConfigName = "vector-config";
 
-                var fieldBuilder = new Azure.Search.Documents.Indexes.FieldBuilder();
+                var fieldBuilder = new FieldBuilder();
 
                 var fieldsToIndex = typesToIndex
                     .Select(tti => fieldBuilder.Build(tti))
                     .SelectMany(x => x);
 
-                // Combine the three search fields, eliminating duplicate names:
+                // Combine the search fields, eliminating duplicate names:
                 var allFields = fieldsToIndex
                     .GroupBy(field => field.Name)
                     .Select(group => group.First())
@@ -120,8 +127,6 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
                 //    Fields = ______
                 //};
 
-
-                // Create the Cognitive Search vector index
                 await _adminClient.CreateIndexAsync(searchIndex);
                 _searchClient = _adminClient.GetSearchClient(_searchIndexName);
 
@@ -133,29 +138,46 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
             }
         }
 
-        public async Task AddMemory<T>(T item, string itemName, Action<T, float[]> vectorizer)
+        /// <summary>
+        /// Add an object instance and its associated vectorization to the underlying memory.
+        /// </summary>
+        /// <param name="item">The object instance to be added to the memory.</param>
+        /// <param name="itemName">The name of the object instance.</param>
+        /// <param name="vectorizer">The logic that sets the embedding vector as a property on the object.</param>
+        /// <returns></returns>
+        public async Task AddMemory(object item, string itemName, Action<object, float[]> vectorizer)
         {
-            // Serialize the product object to send to OpenAI
-            var sItem = JObject.FromObject(item).ToString();
-
             try
             {
-                // Get the embeddings from OpenAI
-                var embbedding = await _textEmbedding.GenerateEmbeddingAsync(sItem);
+                // Prepare the object for embedding
+                var itemToEmbed = EmbeddingUtility.Transform(item);
+
+                // Get the embeddings from OpenAI: the ITextEmbeddingGeneration service is exposed by SemanticKernel
+                // and is responsible for calling the text embedding endpoint to get the vectorized representation
+                // of the incoming object.
+                // Use by default the more elaborate text representation based on EmbeddingFieldAttribute
+                // The purely text representation generated based on the EmbeddingFieldAttribute is well suited for 
+                // embedding and it allows you to control precisely which attributes will be used as inputs in the process.
+                // In general, it is recommended to avoid identifier attributes (e.g., GUIDs) as they do not provide
+                // any meaningful context for the embedding process.
+                // Exercise: Test also using the JSON text representation - itemToEmbed.ObjectToEmbed
+                var embbedding = await _textEmbedding.GenerateEmbeddingAsync(itemToEmbed.TextToEmbed);
+
+                // Add the newly calculated embedding to the entity.
                 vectorizer(item, embbedding.Vector.ToArray());
 
-                // Save to Cognitive Search
+                // This will send the vectorized object to the Azure Cognitive Search index.
                 await _searchClient.IndexDocumentsAsync(IndexDocumentsBatch.Upload(new object[] { item }));
 
-                _logger.LogInformation($"Saved vector for item: {itemName} of type {typeof(T)}");
+                _logger.LogInformation($"Saved vector for item: {itemName} of type {item.GetType().Name}");
             }
             catch (Exception x)
             {
-                _logger.LogError($"Exception while generating vector for [{itemName}]: " + x.Message);
+                _logger.LogError($"Exception while generating vector for [{itemName} of type {item.GetType().Name}]: " + x.Message);
             }
         }
 
-        public async Task RemoveMemory<T>(T item)
+        public async Task RemoveMemory(object item)
         {
             try
             {
@@ -264,7 +286,17 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
             return new MemoryQueryResult(ToMemoryRecordMetadata(result.Value), 1, null);
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Retrieve records from the underlying index that are above a specified similarity threshold when compared to a given string.
+        /// </summary>
+        /// <param name="collection">The name of the index.</param>
+        /// <param name="query">The string to be vectorized and compared to the items in the underlying index.</param>
+        /// <param name="limit">The maximum number of items to return.</param>
+        /// <param name="minRelevanceScore">The lower limit of the similarity score.</param>
+        /// <param name="withEmbeddings"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async IAsyncEnumerable<MemoryQueryResult> SearchAsync(
             string collection,
             string query,
@@ -318,7 +350,6 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
             }
             else
             {
-                // TODO: use vectors
                 var options = new SearchOptions
                 {
                     QueryType = SearchQueryType.Semantic,
@@ -422,7 +453,7 @@ namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiv
             string indexName,
             CancellationToken cancellationToken = default)
         {
-            var fieldBuilder = new Azure.Search.Documents.Indexes.FieldBuilder();
+            var fieldBuilder = new FieldBuilder();
             var fields = fieldBuilder.Build(typeof(AzureCognitiveSearchRecord));
             var newIndex = new SearchIndex(indexName, fields)
             {

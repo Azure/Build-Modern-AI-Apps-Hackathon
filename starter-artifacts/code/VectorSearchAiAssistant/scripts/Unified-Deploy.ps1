@@ -6,12 +6,7 @@ Param(
     [parameter(Mandatory=$true)][string]$location,
     [parameter(Mandatory=$true)][string]$subscription,
     [parameter(Mandatory=$false)][string]$armTemplate="azuredeploy.json",
-    [parameter(Mandatory=$false)][string]$openAiName=$null,
-    [parameter(Mandatory=$false)][string]$openAiRg=$null,
-    [parameter(Mandatory=$false)][string]$openAiCompletionsDeployment=$null,
-    [parameter(Mandatory=$false)][string]$openAiEmbeddingsDeployment=$null,
     [parameter(Mandatory=$false)][bool]$stepDeployArm=$true,
-    [parameter(Mandatory=$false)][bool]$stepDeployOpenAi=$true,
     [parameter(Mandatory=$false)][bool]$stepBuildPush=$true,
     [parameter(Mandatory=$false)][bool]$stepDeployCertManager=$true,
     [parameter(Mandatory=$false)][bool]$stepDeployTls=$true,
@@ -45,15 +40,7 @@ az account set --subscription $subscription
 
 if ($stepDeployArm) {
     # Deploy ARM
-    & ./Deploy-Arm-Azure.ps1 -resourceGroup $resourceGroup -location $location -template $armTemplate
-}
-
-if ($stepDeployOpenAi) {
-    if (-not $openAiRg) {
-        $openAiRg=$resourceGroup
-    }
-
-    & ./Deploy-OpenAi.ps1 -name $openAiName -resourceGroup $openAiRg -location $location -completionsDeployment $openAiCompletionsDeployment -embeddingsDeployment $openAiEmbeddingsDeployment
+    & ./Deploy-Arm-Azure.ps1 -resourceGroup $resourceGroup -location $location -template $armTemplate -resourcePrefix $resourcePrefix -cosmosDbAccountName $cosmosDbAccountName
 }
 
 # Connecting kubectl to AKS
@@ -62,11 +49,12 @@ $aksName = $(az aks list -g $resourceGroup -o json | ConvertFrom-Json).name
 Write-Host "The name of your AKS: $aksName" -ForegroundColor Yellow
 
 # Write-Host "Retrieving credentials" -ForegroundColor Yellow
-az aks get-credentials -n $aksName -g $resourceGroup
+az aks get-credentials -n $aksName -g $resourceGroup --overwrite-existing
 
 # Generate Config
+New-Item -ItemType Directory -Force -Path $(./Join-Path-Recursively.ps1 -pathParts ..,__values)
 $gValuesLocation=$(./Join-Path-Recursively.ps1 -pathParts ..,__values,$gValuesFile)
-& ./Generate-Config.ps1 -resourceGroup $resourceGroup -openAiName $openAiName -openAiRg $openAiRg -openAiDeployment $openAiDeployment -outputFile $gValuesLocation
+& ./Generate-Config.ps1 -resourceGroup $resourceGroup -outputFile $gValuesLocation
 
 # Create Secrets
 if ([string]::IsNullOrEmpty($acrName))
@@ -107,7 +95,12 @@ if ($stepDeployImages) {
 
 if ($stepImportData) {
     # Import Data
-    & ./Import-Data.ps1 -resourceGroup $resourceGroup -location $location
+    & ./Import-Data.ps1 -resourceGroup $resourceGroup -cosmosDbAccountName $cosmosDbAccountName
 }
+
+$webappHostname=$(az aks show -n $aksName -g $resourceGroup -o json --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName | ConvertFrom-Json)
+Write-Host "===========================================================" -ForegroundColor Yellow
+Write-Host "The frontend is hosted at https://$webappHostname" -ForegroundColor Yellow
+Write-Host "===========================================================" -ForegroundColor Yellow
 
 Pop-Location

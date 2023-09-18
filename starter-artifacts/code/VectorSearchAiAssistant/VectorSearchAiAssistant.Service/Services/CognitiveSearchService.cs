@@ -194,7 +194,7 @@ namespace VectorSearchAiAssistant.Service.Services
                 }
 
                 var vectorSearchConfigName = "vector-config";
-
+                
                 var fieldBuilder = new FieldBuilder();
                 var customerFields = fieldBuilder.Build(typeof(Customer));
                 var productFields = fieldBuilder.Build(typeof(Product));

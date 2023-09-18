@@ -4,10 +4,13 @@ using Microsoft.Extensions.Logging;
 using VectorSearchAiAssistant.Service.Models.Chat;
 using VectorSearchAiAssistant.Service.Interfaces;
 using VectorSearchAiAssistant.Service.Models.Search;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.Extensions.Options;
 using VectorSearchAiAssistant.Service.Models.ConfigurationOptions;
-using System.Text.Json;
+using Newtonsoft.Json.Linq;
+using VectorSearchAiAssistant.Service.Models;
+using VectorSearchAiAssistant.Service.Utils;
+using System.Diagnostics;
+using Castle.Core.Resource;
 
 namespace VectorSearchAiAssistant.Service.Services
 {
@@ -27,11 +30,10 @@ namespace VectorSearchAiAssistant.Service.Services
         private readonly CosmosDbSettings _settings;
         private readonly ILogger _logger;
 
-        private ChangeFeedProcessor? _productChangeFeedProcessor, _customerChangeFeedProcessor;
-        private bool _productsInitialized = false;
-        private bool _customersInitialized = false;
+        private List<ChangeFeedProcessor> _changeFeedProcessors;
+        private bool _changeFeedsInitialized = false;
 
-        public bool IsInitialized => _productsInitialized && _customersInitialized;
+        public bool IsInitialized => _changeFeedsInitialized;
 
         public CosmosDbService(
             IRAGService ragService,
@@ -48,6 +50,16 @@ namespace VectorSearchAiAssistant.Service.Services
 
             _logger = logger;
 
+            _logger.LogInformation("Initializing Cosmos DB service.");
+
+            if (!_settings.EnableTracing)
+            {
+                Type defaultTrace = Type.GetType("Microsoft.Azure.Cosmos.Core.Trace.DefaultTrace,Microsoft.Azure.Cosmos.Direct");
+                TraceSource traceSource = (TraceSource)defaultTrace.GetProperty("TraceSource").GetValue(null);
+                traceSource.Switch.Level = SourceLevels.All;
+                traceSource.Listeners.Clear();
+            }
+
             CosmosSerializationOptions options = new()
             {
                 PropertyNamingPolicy = CosmosPropertyNamingPolicy.CamelCase
@@ -55,6 +67,7 @@ namespace VectorSearchAiAssistant.Service.Services
 
             CosmosClient client = new CosmosClientBuilder(_settings.Endpoint, _settings.Key)
                 .WithSerializerOptions(options)
+                .WithConnectionModeGateway()
                 .Build();
 
             Database? database = client?.GetDatabase(_settings.Database);
@@ -84,6 +97,7 @@ namespace VectorSearchAiAssistant.Service.Services
                 ?? throw new ArgumentException($"Unable to connect to the {_settings.ChangeFeedLeaseContainer} container required to listen to the CosmosDB change feed.");
 
             Task.Run(() => StartChangeFeedProcessors());
+            _logger.LogInformation("Cosmos DB service initialized.");
         }
 
         private async Task StartChangeFeedProcessors()
@@ -92,24 +106,28 @@ namespace VectorSearchAiAssistant.Service.Services
              * Uncomment and complete the following lines as instructed.
              */
 
+            _logger.LogInformation("Initializing the change feed processors...");
+            _changeFeedProcessors = new List<ChangeFeedProcessor>();
+
             try
             {
-                // Create a change feed processor that listens for new Product instances
-                // added to the product container in Cosmos DB
-                _productChangeFeedProcessor = _containers["product"]
-                    .GetChangeFeedProcessorBuilder<Product>("productChangeFeed", ProductChangeFeedHandler)
-                    .WithInstanceName("productChangeInstance")
-                    .WithLeaseContainer(_leases)
-                    .Build();
-                await _productChangeFeedProcessor.StartAsync();
+                // TODO: Create a change feed processor that listens for new JsonDocument instances added to the tracked containers.
+                // Note that the function GenericChangeFeedHandler has been started for you below.
+                //foreach (string __ in ____.Split(',').Select(s => s.Trim()))
+                //{
+                //    var changeFeedProcessor = _containers[__]
+                //        .GetChangeFeedProcessorBuilder<dynamic>($"{__}ChangeFeed", GenericChangeFeedHandler)
+                //        .WithInstanceName($"{__}ChangeInstance")
+                //        .WithErrorNotification(GenericChangeFeedErrorHandler)
+                //        .WithLeaseContainer(_leases)
+                //        .Build();
+                //    await changeFeedProcessor.StartAsync();
+                //    _changeFeedProcessors.Add(changeFeedProcessor);
+                //    _logger.LogInformation($"Initialized the change feed processor for the {__} container.");
+                //}
 
-                _productsInitialized = true;
-
-                // TODO: Following the same pattern as above, create a change feed processor 
-                // that listens for new JsonDocument instances added to the customer container.
-                // Note that the function CustomerChangeFeedHandler has been started for you below.
-                // ...add your code here...
-                _customersInitialized = true;
+                _changeFeedsInitialized = true;
+                _logger.LogInformation("Cosmos DB change feed processors initialized.");
             }
             catch (Exception ex)
             {
@@ -117,78 +135,70 @@ namespace VectorSearchAiAssistant.Service.Services
             }
         }
 
-        private async Task ProductChangeFeedHandler(
+        // This is an example of a dynamic change feed handler that can handle a range of preconfigured entities.
+        private async Task GenericChangeFeedHandler(
             ChangeFeedProcessorContext context,
-            IReadOnlyCollection<Product> changes,
+            IReadOnlyCollection<dynamic> changes,
             CancellationToken cancellationToken)
         {
             if (changes.Count == 0)
                 return;
 
-            _logger.LogInformation("Generating embeddings for " + changes.Count + " Products");
-
-            foreach (var product in changes) 
-            {
-                try
-                {
-                    await _ragService.AddMemory<Product>(
-                        product,
-                        product.name,
-                        (p, v) => { p.vector = v; });
-                    _logger.LogInformation("Add a new memory for product: " + product.name);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError("Exception while generating memory for [" + product.name + "]: " + ex.Message);
-                }
-            }
-        }
-
-        private async Task CustomerChangeFeedHandler(
-            ChangeFeedProcessorContext context,
-            IReadOnlyCollection<JsonDocument> changes,
-            CancellationToken cancellationToken)
-        {
-            /* TODO: Challenge 2.  
-             * Uncomment and complete the following lines as instructed.
-             */
-
-            if (changes.Count == 0)
-                return;
-
-            _logger.LogInformation("Generating embeddings for " + changes.Count + " Customers and Sales Orders");
+            var batchRef = Guid.NewGuid().ToString();
+            _logger.LogInformation($"Starting to generate embeddings for {changes.Count} entities (batch ref {batchRef}).");
 
             // Using dynamic type as this container has two different entities
             foreach (var item in changes)
             {
-                var type = "";
-                using (var doc = JsonDocument.Parse(item.RootElement.GetRawText()))
+                try
                 {
-                    var obj = doc.RootElement.GetProperty("type");
-                    type = obj.GetString();
-                }
+                    if (cancellationToken.IsCancellationRequested)
+                        break;
 
-                if (type == "customer")
-                {
-                    var customer = JsonSerializer.Deserialize<Customer>(item.RootElement.GetRawText());
+                    var jObject = item as JObject;
+                    var typeMetadata = ModelRegistry.IdentifyType(jObject);
 
-                    // TODO: Add the Customer memory where the itemName should be
-                    // the customer's firstName and lastName
-                    // ...add your code here...
-                }
-                else if (type == "salesOrder")
-                {
-                    var salesOrder = JsonSerializer.Deserialize<SalesOrder>(item.RootElement.GetRawText());
+                    if (typeMetadata == null)
+                    {
+                        _logger.LogError($"Unsupported entity type in Cosmos DB change feed handler: {jObject}");
+                    }
+                    else
+                    {
+                        var entity = jObject.ToObject(typeMetadata.Type);
 
-                    // TODO: Add the SalesOrder memory where the itemName should be 
-                    // the sales order id.
-                    // ...add your code here...
+                        // Add the entity to the Semantic Kernel memory used by the RAG service
+                        // We want to keep the VectorSearchAiAssistant.SemanticKernel project isolated from any domain-specific
+                        // references/dependencies, so we use a generic mechanism to get the name of the entity as well as to 
+                        // set the vector property on the entity.
+                        await _ragService.AddMemory(
+                            entity,
+                            string.Join(" ", entity.GetPropertyValues(typeMetadata.NamingProperties)),
+                            (e, v) => { (e as EmbeddedEntity).vector = v; });
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _logger.LogError($"Unsupported entity saved in customer container: {type}");
+                    _logger.LogError(ex, $"Error processing an item in the change feed handler: {item}");
                 }
             }
+
+            _logger.LogInformation($"Finished generating embeddings (batch ref {batchRef}).");
+        }
+
+        private async Task GenericChangeFeedErrorHandler(
+            string LeaseToken,
+            Exception exception)
+        {
+            if (exception is ChangeFeedProcessorUserException userException)
+            {
+                Console.WriteLine($"Lease {LeaseToken} processing failed with unhandled exception from user delegate {userException.InnerException}");
+            }
+            else
+            {
+                Console.WriteLine($"Lease {LeaseToken} failed with {exception}");
+            }
+
+            await Task.CompletedTask;
         }
 
         /// <summary>
@@ -413,7 +423,7 @@ namespace VectorSearchAiAssistant.Service.Services
                 // Ignore conflict errors.
                 if (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
                 {
-                    _logger.LogInformation("Product Already added.");
+                    _logger.LogInformation("Product already added.");
                 }
                 else
                 {
@@ -421,6 +431,60 @@ namespace VectorSearchAiAssistant.Service.Services
                     throw;
                 }
                 return product;
+            }
+        }
+
+        /// <summary>
+        /// Inserts a customer into the customer container.
+        /// </summary>
+        /// <param name="product">Customer item to create.</param>
+        /// <returns>Newly created customer item.</returns>
+        public async Task<Customer> InsertCustomerAsync(Customer customer)
+        {
+            try
+            {
+                return await _customer.CreateItemAsync(customer);
+            }
+            catch (CosmosException ex)
+            {
+                // Ignore conflict errors.
+                if (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    _logger.LogInformation("Customer already added.");
+                }
+                else
+                {
+                    _logger.LogError(ex.Message);
+                    throw;
+                }
+                return customer;
+            }
+        }
+
+        /// <summary>
+        /// Inserts a sales order into the customer container.
+        /// </summary>
+        /// <param name="product">Sales order item to create.</param>
+        /// <returns>Newly created sales order item.</returns>
+        public async Task<SalesOrder> InsertSalesOrderAsync(SalesOrder salesOrder)
+        {
+            try
+            {
+                return await _customer.CreateItemAsync(salesOrder);
+            }
+            catch (CosmosException ex)
+            {
+                // Ignore conflict errors.
+                if (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    _logger.LogInformation("Sales order already added.");
+                }
+                else
+                {
+                    _logger.LogError(ex.Message);
+                    throw;
+                }
+                return salesOrder;
             }
         }
 
@@ -494,6 +558,13 @@ namespace VectorSearchAiAssistant.Service.Services
 
             return resultDocuments;
 
+        }
+
+        public async Task<CompletionPrompt> GetCompletionPrompt(string sessionId, string completionPromptId)
+        {
+            return await _completions.ReadItemAsync<CompletionPrompt>(
+                id: completionPromptId,
+                partitionKey: new PartitionKey(sessionId));
         }
     }
 }
