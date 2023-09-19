@@ -5,6 +5,7 @@ Param(
     [parameter(Mandatory=$false)][string]$aksName,
     [parameter(Mandatory=$false)][string]$resourceGroup,
     [parameter(Mandatory=$false)][string]$acrName,
+    [parameter(Mandatory=$false)][string]$acrResourceGroup=$resourceGroup,
     [parameter(Mandatory=$false)][string]$tag="latest",
     [parameter(Mandatory=$false)][string]$charts = "*",
     [parameter(Mandatory=$false)][string]$valuesFile = "",
@@ -87,7 +88,13 @@ Write-Host " TLS/SSL environment to enable: $tlsEnv"  -ForegroundColor Yellow
 Write-Host " Namespace (empty means the one in .kube/config): $namespace"  -ForegroundColor Yellow
 Write-Host " --------------------------------------------------------" 
 
-$acrLogin=$(az acr show -n $acrName -g $resourceGroup -o json| ConvertFrom-Json).loginServer
+if ($acrName -ne "bydtochatgptcr") {
+    $acrLogin=$(az acr show -n $acrName -g $acrResourceGroup -o json| ConvertFrom-Json).loginServer
+    Write-Host "acr login server is $acrLogin" -ForegroundColor Yellow
+}
+else {
+    $acrLogin="bydtochatgptcr.azurecr.io"
+}
 
 if ($tlsEnv -ne "custom" -and [String]::IsNullOrEmpty($tlsHost)) {
     $aksHost=$(az aks show -n $aksName -g $resourceGroup --query addonProfiles.httpapplicationrouting.config.HTTPApplicationRoutingZoneName -o json | ConvertFrom-Json)
@@ -128,6 +135,31 @@ if ($charts.Contains("web") -or  $charts.Contains("*")) {
     $command = "helm upgrade --install $name-web ./chat-web-app -f $valuesFile --set ingress.hosts='{$aksHost}' --set image.repository=$acrLogin/chat-web-app --set image.tag=$tag  --set hpa.activated=$autoscale"
     $command = createHelmCommand $command
     Invoke-Expression "$command"
+}
+
+Write-Host " --------------------------------------------------------" 
+Write-Host "Entering holding pattern to wait for proper backend API initialization"
+Write-Host "Attempting to retrieve status from https://$($aksHost)/api/status every 20 seconds with 50 retries"
+Write-Host " --------------------------------------------------------" 
+$apiStatus = "initializing"
+$retriesLeft = 50
+while (($apiStatus.ToString() -ne "ready") -and ($retriesLeft -gt 0)) {
+    Start-Sleep -Seconds 20
+    try {
+        $apiStatus = Invoke-RestMethod -Uri "https://$($aksHost)/api/status" -Method GET
+    }
+    catch {
+        Write-Host "The attempt to invoke the API endpoint failed. Will retry."
+    }
+    finally {
+        Write-Host "Last known API endpoint status: $($apiStatus)"
+    }
+    
+    $retriesLeft -= 1
+} 
+
+if ($apiStatus.ToString() -ne "ready") {
+    throw "The backend API did not enter the ready state."
 }
 
 Pop-Location
