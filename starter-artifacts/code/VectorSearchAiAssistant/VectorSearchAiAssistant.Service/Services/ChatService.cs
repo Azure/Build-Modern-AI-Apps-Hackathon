@@ -12,7 +12,23 @@ public class ChatService : IChatService
     private readonly IRAGService _ragService;
     private readonly ILogger _logger;
 
-    public bool IsInitialized => _cosmosDbService.IsInitialized && _ragService.IsInitialized;
+    public string Status
+    {
+        get
+        {
+            if (_cosmosDbService.IsInitialized && _ragService.IsInitialized)
+                return "ready";
+
+            var status = new List<string>();
+
+            if (!_cosmosDbService.IsInitialized)
+                status.Add("CosmosDBService: initializing");
+            if (!_ragService.IsInitialized)
+                status.Add("SemanticKernelRAGService: initializing");
+
+            return string.Join(",", status);
+        }
+    }
 
     public ChatService(
         ICosmosDbService cosmosDbService,
@@ -74,34 +90,44 @@ public class ChatService : IChatService
     /// Receive a prompt from a user, vectorize it from the OpenAI service, and get a completion from the OpenAI service.
     /// </summary>
     public async Task<Completion> GetChatCompletionAsync(string? sessionId, string userPrompt)
-    {
+    {        
         /* TODO: Challenge 3. 
         * Complete the todo tasks as instructed by the comments
         */
-        ArgumentNullException.ThrowIfNull(sessionId);
 
-        // Retrieve conversation, including latest prompt.
-        // If you put this after the vector search it doesn't take advantage of previous information given so harder to chain prompts together.
-        // However if you put this before the vector search it can get stuck on previous answers and not pull additional information. Worth experimenting
+        try
+        {
+            ArgumentNullException.ThrowIfNull(sessionId);
 
-        // Retrieve conversation, including latest prompt.
-        var messages = await _cosmosDbService.GetSessionMessagesAsync(sessionId);
+            // Retrieve conversation, including latest prompt.
+            // If you put this after the vector search it doesn't take advantage of previous information given so harder to chain prompts together.
+            // However if you put this before the vector search it can get stuck on previous answers and not pull additional information. Worth experimenting
 
-        // Generate the completion to return to the user
-        //(string completion, int promptTokens, int responseTokens) = await_openAiService.GetChatCompletionAs ync(sessionId, conversation, retrievedDocuments);
-        var result = await _ragService.GetResponse(userPrompt, messages);
+            // Retrieve conversation, including latest prompt.
+            var messages = await _cosmosDbService.GetSessionMessagesAsync(sessionId);
 
-        // TODO: Complete the following lines to create the promptMessage and completionMessage objects
-        // that will be persisted to Cosmos DB
-        var promptMessage = new Message(sessionId, "", 0, "", null, null);
-        var completionMessage = new Message(sessionId, "", 0, "", null, null);
+            // Generate the completion to return to the user
+            //(string completion, int promptTokens, int responseTokens) = await_openAiService.GetChatCompletionAs ync(sessionId, conversation, retrievedDocuments);
+            var result = await _ragService.GetResponse(userPrompt, messages);
 
+            // Add both prompt and completion to cache, then persist in Cosmos DB
+            // TODO: Replace the default parameters on the following lines
+            // to create the promptMessage and completionMessage objects that will be persisted to Cosmos DB
+            var promptMessage = new Message(sessionId, "", 0, "", null, null);
+            var completionMessage = new Message(sessionId, "", 0, "", null, null);
 
-        // Add to prompt and completion to cache, then persist in Cosmos as transaction 
-        await AddPromptCompletionMessagesAsync(sessionId, promptMessage, completionMessage);
+            var completionPrompt = new CompletionPrompt(sessionId, completionMessage.Id, result.UserPrompt);
+            completionMessage.CompletionPromptId = completionPrompt.Id;
 
-        // The completion result is what is displayed in the client UI
-        return new Completion { Text = result.Completion };
+            await AddPromptCompletionMessagesAsync(sessionId, promptMessage, completionMessage, completionPrompt);
+
+            return new Completion { Text = result.Completion };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting completion in session {sessionId} for user prompt [{userPrompt}].");
+            return new Completion { Text = "Could not generate a completion due to an internal error." };
+        }
     }
 
     /// <summary>
@@ -109,15 +135,23 @@ public class ChatService : IChatService
     /// </summary>
     public async Task<Completion> SummarizeChatSessionNameAsync(string? sessionId, string prompt)
     {
-        ArgumentNullException.ThrowIfNull(sessionId);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(sessionId);
 
-        await Task.CompletedTask;
+            await Task.CompletedTask;
 
-        var summary = await _ragService.Summarize(sessionId, prompt);
+            var summary = await _ragService.Summarize(sessionId, prompt);
 
-        await RenameChatSessionAsync(sessionId, summary);
+            await RenameChatSessionAsync(sessionId, summary);
 
-        return new Completion { Text = summary };
+            return new Completion { Text = summary };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error getting a summary in session {sessionId} for user prompt [{prompt}].");
+            return new Completion { Text = "[No Summary]" };
+        }
     }
 
     /// <summary>
@@ -134,7 +168,7 @@ public class ChatService : IChatService
     /// <summary>
     /// Add user prompt and AI assistance response to the chat session message list object and insert into the data service as a transaction.
     /// </summary>
-    private async Task AddPromptCompletionMessagesAsync(string sessionId, Message promptMessage, Message completionMessage)
+    private async Task AddPromptCompletionMessagesAsync(string sessionId, Message promptMessage, Message completionMessage, CompletionPrompt completionPrompt)
     {
         var session = await _cosmosDbService.GetSessionAsync(sessionId);
 
@@ -142,7 +176,7 @@ public class ChatService : IChatService
         session.TokensUsed += promptMessage.Tokens;
         session.TokensUsed += completionMessage.Tokens;
 
-        await _cosmosDbService.UpsertSessionBatchAsync(promptMessage, completionMessage,session);
+        await _cosmosDbService.UpsertSessionBatchAsync(promptMessage, completionMessage, completionPrompt, session);
     }
 
     /// <summary>
@@ -165,6 +199,24 @@ public class ChatService : IChatService
         await _cosmosDbService.InsertProductAsync(product);
     }
 
+    public async Task AddCustomer(Customer customer)
+    {
+        ArgumentNullException.ThrowIfNull(customer);
+        ArgumentNullException.ThrowIfNullOrEmpty(customer.id);
+        ArgumentNullException.ThrowIfNullOrEmpty(customer.customerId);
+
+        await _cosmosDbService.InsertCustomerAsync(customer);
+    }
+
+    public async Task AddSalesOrder(SalesOrder salesOrder)
+    {
+        ArgumentNullException.ThrowIfNull(salesOrder);
+        ArgumentNullException.ThrowIfNullOrEmpty(salesOrder.id);
+        ArgumentNullException.ThrowIfNullOrEmpty(salesOrder.customerId);
+
+        await _cosmosDbService.InsertSalesOrderAsync(salesOrder);
+    }
+
     public async Task DeleteProduct(string productId, string categoryId)
     {
         ArgumentNullException.ThrowIfNullOrEmpty(productId);
@@ -174,11 +226,19 @@ public class ChatService : IChatService
 
         try
         {
-            await _ragService.RemoveMemory<Product>(new Product { id = productId });
+            await _ragService.RemoveMemory(new Product { id = productId });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, $"Error attempting to remove memory for product id {productId} (category id {categoryId})");
         }
+    }
+
+    public async Task<CompletionPrompt> GetCompletionPrompt(string sessionId, string completionPromptId)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(sessionId);
+        ArgumentNullException.ThrowIfNullOrEmpty(completionPromptId);
+
+        return await _cosmosDbService.GetCompletionPrompt(sessionId, completionPromptId);
     }
 }
