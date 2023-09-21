@@ -1,4 +1,4 @@
-using VectorSearchAiAssistant.SemanticKernel.Chat;
+using VectorSearchAiAssistant.SemanticKernel.MemorySource;
 using VectorSearchAiAssistant.Service.Interfaces;
 using VectorSearchAiAssistant.Service.Models.ConfigurationOptions;
 using VectorSearchAiAssistant.Service.Services;
@@ -10,6 +10,8 @@ namespace ChatServiceWebApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            builder.Services.AddApplicationInsightsTelemetry();
 
             builder.Services.AddOptions<CosmosDbSettings>()
                 .Bind(builder.Configuration.GetSection("MSCosmosDBOpenAI:CosmosDB"));
@@ -29,6 +31,14 @@ namespace ChatServiceWebApi
                 .Bind(builder.Configuration.GetSection("MSCosmosDBOpenAI:DurableSystemPrompt"));
             builder.Services.AddSingleton<ISystemPromptService, DurableSystemPromptService>();
 
+            builder.Services.AddOptions<AzureCognitiveSearchMemorySourceSettings>()
+                .Bind(builder.Configuration.GetSection("MSCosmosDBOpenAI:CognitiveSearchMemorySource"));
+            builder.Services.AddTransient<IMemorySource, AzureCognitiveSearchMemorySource>();
+
+            builder.Services.AddOptions<BlobStorageMemorySourceSettings>()
+                .Bind(builder.Configuration.GetSection("MSCosmosDBOpenAI:BlobStorageMemorySource"));
+            builder.Services.AddTransient<IMemorySource, BlobStorageMemorySource>();
+
             builder.Services.AddScoped<ChatEndpoints>();
 
             // Add services to the container.
@@ -39,6 +49,10 @@ namespace ChatServiceWebApi
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            app.UseExceptionHandler(exceptionHandlerApp
+                    => exceptionHandlerApp.Run(async context
+                        => await Results.Problem().ExecuteAsync(context)));
 
             // Configure the HTTP request pipeline.
             app.UseSwagger();

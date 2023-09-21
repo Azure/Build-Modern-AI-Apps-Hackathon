@@ -1,7 +1,9 @@
 ﻿using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.AI.ChatCompletion;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using VectorSearchAiAssistant.SemanticKernel.Text;
+using VectorSearchAiAssistant.SemanticKernel.TextEmbedding;
 
 namespace VectorSearchAiAssistant.SemanticKernel.Chat
 {
@@ -10,6 +12,7 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
         readonly IKernel _kernel;
         readonly int _maxTokens;
         readonly int _maxPromptTokens;
+        readonly Dictionary<string, Type> _memoryTypes;
         readonly ITokenizer? _tokenizer;
         readonly PromptOptimizationSettings? _promptOptimizationSettings;
 
@@ -22,11 +25,13 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
         public ChatBuilder(
             IKernel kernel,
             int maxTokens,
+            Dictionary<string, Type> memoryTypes,
             ITokenizer? tokenizer = null,
             PromptOptimizationSettings? promptOptimizationSettings = null) 
         {
             _kernel = kernel;
             _maxTokens = maxTokens;
+            _memoryTypes = memoryTypes;
 
             // If no external tokenizer has been provided, use our own
             _tokenizer = tokenizer != null ? tokenizer : new SemanticKernelTokenizer();
@@ -55,10 +60,13 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
             return this;
         }
 
-        public ChatBuilder WithMemories(List<object> memories)
+        public ChatBuilder WithMemories(List<string> memories)
         {
             ArgumentNullException.ThrowIfNull(memories, nameof(memories));
-            _memories = memories;
+
+            // Use by default the JSON text representation based on EmbeddingFieldAttribute
+            // TODO: Test also using the more elaborate text representation - itemToEmbed.TextToEmbed
+            _memories = memories.Select(m => (object) EmbeddingUtility.Transform(m, _memoryTypes).TextToEmbed).ToList();
             return this;
         }
 
@@ -77,8 +85,8 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
              * Uncomment and complete the following lines as instructed.
              */
 
-            // Create a new chat using the ChatCompletion service
-            ChatHistory result = _kernel.GetService<IChatCompletion>().CreateNewChat();
+            var result = _kernel.GetService<IChatCompletion>()
+                .CreateNewChat();
 
             var systemMessage = string.IsNullOrWhiteSpace(_systemPrompt)
                 ? string.Empty
@@ -88,15 +96,18 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
              * Build the sytemMessage string so that it has the form:
              *  "systemMessage newline newline jsonMemories"  
              */
-            //if (_memories.Count > 0)
-            //  systemMessage = "";
+            if (_memories.Count > 0)
+            {
+                //var memoriesPrompt = ____
+                //systemMessage = $"____".NormalizeLineEndings();
+            }
 
             // TODO: add the non-empty or non-null systemMessage to the chatHistory
             //if (!string.IsNullOrWhiteSpace(systemMessage))
             //  result.
 
             //TODO: Add each system message to the history
-            //foreach (var __ in __)
+            //foreach (var __ in ____)
             //    result.AddMessage(message.__, message.__);
 
             return result;
@@ -109,7 +120,7 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
             var memories = _memories.Select(m => new
             {
                 Memory = m,
-                Tokens = _tokenizer.GetTokensCount(JsonConvert.SerializeObject(m))
+                Tokens = _tokenizer.GetTokensCount(JsonConvert.SerializeObject(m).NormalizeLineEndings())
             }).ToList();
 
             // Keep in reverse order because we need to keep the most recents messages

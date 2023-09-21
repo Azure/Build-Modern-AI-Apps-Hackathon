@@ -5,7 +5,7 @@ namespace VectorSearchAiAssistant.Service.Interfaces;
 
 public interface IChatService
 {
-    bool IsInitialized { get; }
+    string Status { get; }
 
     /// <summary>
     /// Returns list of chat session ids and names for left-hand nav to bind to (display Name and ChatSessionId as hidden)
@@ -46,5 +46,11 @@ public interface IChatService
 
     Task AddProduct(Product product);
 
+    Task AddCustomer(Customer customer);
+
+    Task AddSalesOrder(SalesOrder salesOrder);
+
     Task DeleteProduct(string productId, string categoryId);
+
+    Task<CompletionPrompt> GetCompletionPrompt(string sessionId, string completionPromptId);
 }

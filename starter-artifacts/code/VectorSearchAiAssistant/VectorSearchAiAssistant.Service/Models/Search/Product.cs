@@ -1,4 +1,5 @@
 ﻿using Azure.Search.Documents.Indexes;
+using VectorSearchAiAssistant.SemanticKernel.TextEmbedding;
 
 namespace VectorSearchAiAssistant.Service.Models.Search
 {
@@ -9,17 +10,23 @@ namespace VectorSearchAiAssistant.Service.Models.Search
         public string id { get; set; }
         [SimpleField]
         public string categoryId { get; set; }
-        [SimpleField]
+        [SearchableField(IsFilterable = true, IsFacetable = true)]
+        [EmbeddingField(Label = "Product category name")]
         public string categoryName { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product stock keeping unit (SKU)")]
         public string sku { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product name")]
         public string name { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product description")]
         public string description { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product price")]
         public double price { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product tags")]
         public List<Tag> tags { get; set; }
 
         public Product(string id, string categoryId, string categoryName, string sku, string name, string description, double price, List<Tag> tags, float[]? vector = null)
@@ -62,6 +69,7 @@ namespace VectorSearchAiAssistant.Service.Models.Search
         [SimpleField]
         public string id { get; set; }
         [SimpleField]
+        [EmbeddingField(Label = "Product tag name")]
         public string name { get; set; }
 
         public Tag(string id, string name)
