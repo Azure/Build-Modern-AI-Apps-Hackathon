@@ -48,11 +48,6 @@ if ($stepLoginAzure) {
 # Write-Host "Choosing your subscription" -ForegroundColor Yellow
 az account set --subscription $subscription
 
-<<<<<<< HEAD
-if ($stepDeployArm) {
-    # Deploy ARM
-    & ./Deploy-Arm-Azure.ps1 -resourceGroup $resourceGroup -location $location -template $armTemplate -resourcePrefix $resourcePrefix -cosmosDbAccountName $cosmosDbAccountName
-=======
 $rg = $(az group show -g $resourceGroup -o json | ConvertFrom-Json)
 if (-not $rg) {
     $rg=$(az group create -g $resourceGroup -l $location --subscription $subscription)
@@ -84,7 +79,6 @@ if ($stepDeployOpenAi) {
     }
 
     & ./Deploy-OpenAi.ps1 -name $openAiName -resourceGroup $openAiRg -location $location -completionsDeployment $openAiCompletionsDeployment -embeddingsDeployment $openAiEmbeddingsDeployment
->>>>>>> 9cf5877b3d481c1778e63a7e40d79e712bf6fa3b
 }
 
 ## Getting OpenAI info
@@ -106,10 +100,6 @@ else
     $openAiEndpoint="OPENAI_ENDPOINT_URL"
 }
 
-<<<<<<< HEAD
-# Write-Host "Retrieving credentials" -ForegroundColor Yellow
-az aks get-credentials -n $aksName -g $resourceGroup --overwrite-existing
-=======
 if ($stepDeployArm) {
 
     if ([string]::IsNullOrEmpty($armTemplate))
@@ -144,7 +134,6 @@ else
         $cosmosDbAccountName=$(az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.cosmosDbAccountName.value | ConvertFrom-Json)
     }
 }
->>>>>>> 9cf5877b3d481c1778e63a7e40d79e712bf6fa3b
 
 # Generate Config
 New-Item -ItemType Directory -Force -Path $(./Join-Path-Recursively.ps1 -pathParts ..,__values)
@@ -202,14 +191,11 @@ if ($stepDeployImages) {
 if ($stepImportData) {
     # Import Data
     & ./Import-Data.ps1 -resourceGroup $resourceGroup -cosmosDbAccountName $cosmosDbAccountName
-<<<<<<< HEAD
-=======
 }
 
 if ($deployAks)
 {
     $webappHostname=$(az aks show -n $aksName -g $resourceGroup -o json --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName | ConvertFrom-Json)
->>>>>>> 9cf5877b3d481c1778e63a7e40d79e712bf6fa3b
 }
 else
 {
