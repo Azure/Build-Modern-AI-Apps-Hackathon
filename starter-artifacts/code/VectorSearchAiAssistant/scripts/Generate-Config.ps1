@@ -55,7 +55,12 @@ $blobAccount=$(az storage account list -g $resourceGroup -o json | ConvertFrom-J
 $blobKey=$(az storage account keys list -g $resourceGroup -n $blobAccount -o json | ConvertFrom-Json)[0].value
 
 ## Getting OpenAI info
-$openAi=$(az cognitiveservices account list -g $resourceGroup -o json | ConvertFrom-Json)
+if ($openAiName) {
+    $openAi=$(az cognitiveservices account show -n $openAiName -g $openAiRg -o json | ConvertFrom-Json)
+} else {
+    $openAi=$(az cognitiveservices account list -g $resourceGroup -o json | ConvertFrom-Json)
+    $openAiRg=$resourceGroup
+}
 
 $openAiKey=$(az cognitiveservices account keys list -g $resourceGroup -n $openAi.name -o json --query key1 | ConvertFrom-Json)
 
