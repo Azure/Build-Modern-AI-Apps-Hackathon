@@ -93,6 +93,12 @@
       "nodeRG": "[format('MC_{0}', parameters('name'))]",
       "sku": "Basic",
       "tier": "Free"
+    },
+    "laSettings": {
+      "name": "[format('{0}-la', parameters('name'))]"
+    },
+    "aiSettings": {
+      "name": "[format('{0}-ai', parameters('name'))]"
     }
   },
   "resources": [
@@ -303,12 +309,53 @@
       }
     },
     {
+      "type": "Microsoft.OperationalInsights/workspaces",
+      "apiVersion": "2021-12-01-preview",
+      "name": "[variables('laSettings').name]",
+      "location": "eastus",
+      "properties": {
+        "sku": {
+          "name": "Standalone"
+        },
+        "retentionInDays": 31,
+        "features": {
+          "enableLogAccessUsingOnlyResourcePermissions": true
+        },
+        "workspaceCapping": {
+          "dailyQuotaGb": -1
+        },
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      }
+    },
+    {
+      "type": "Microsoft.Insights/components",
+      "apiVersion": "2020-02-02",
+      "name": "[variables('aiSettings').name]",
+      "location": "[parameters('location')]",
+      "kind": "web",
+      "properties": {
+        "Application_Type": "web",
+        "Flow_Type": "Bluefield",
+        "Request_Source": "rest",
+        "RetentionInDays": 30,
+        "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('laSettings').name)]",
+        "IngestionMode": "LogAnalytics",
+        "publicNetworkAccessForIngestion": "Enabled",
+        "publicNetworkAccessForQuery": "Enabled"
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('laSettings').name)]"
+      ]
+    },
+    {
       "type": "Microsoft.ContainerService/managedClusters",
       "apiVersion": "2023-01-02-preview",
       "name": "[variables('aksSettings').name]",
       "location": "eastus",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetSettings').name, 'aks-subnet')]"
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('vnetSettings').name, 'aks-subnet')]",
+        "[resourceId('Microsoft.OperationalInsights/workspaces', variables('laSettings').name)]"
       ],
       "sku": {
         "name": "Basic",
@@ -367,6 +414,13 @@
           },
           "httpApplicationRouting": {
             "enabled": true
+          },
+          "omsagent": {
+            "enabled": true,
+            "config": {
+              "logAnalyticsWorkspaceResourceID": "[resourceId('Microsoft.OperationalInsights/workspaces', variables('laSettings').name)]",
+              "useAADAuth": "true"
+            }
           }
         },
         "nodeResourceGroup": "[variables('aksSettings').nodeRG]",
@@ -436,7 +490,13 @@
             "enabled": true
           }
         },
-        "workloadAutoScalerProfile": {}
+        "workloadAutoScalerProfile": {},
+        "azureMonitorProfile": {
+          "metrics": {
+            "enabled": true,
+            "kubeStateMetrics": {}
+          }
+        }
       }
     },
     {
@@ -454,16 +514,93 @@
       "apiVersion": "2022-09-01",
       "name": "[concat(variables('vnetSettings').name, '/aks-subnet')]",
       "dependsOn": [
-        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetSettings').name)]"
+        "[resourceId('Microsoft.Network/virtualNetworks', variables('vnetSettings').name)]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('vnetSettings').name, '-aks-subnet-nsg'))]"
       ],
       "properties": {
         "addressPrefix": "[variables('vnetSettings').subnets['aks-subnet'].addressPrefix]",
         "delegations": [],
         "privateEndpointNetworkPolicies": "Disabled",
-        "privateLinkServiceNetworkPolicies": "Enabled"
+        "privateLinkServiceNetworkPolicies": "Enabled",
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(variables('vnetSettings').name, '-aks-subnet-nsg'))]",
+          "name": "[concat(variables('vnetSettings').name, '-aks-subnet-nsg')]",
+          "properties": { 
+            "flushConnection": false,
+            "securityRules": [
+              {
+                "name": "AllowHTTPInbound",
+                "properties": {
+                  "access": "Allow",
+                  "destinationAddressPrefix": "*",
+                  "destinationPortRange": "80",
+                  "direction": "Inbound",
+                  "priority": 500,
+                  "protocol": "Tcp",
+                  "sourceAddressPrefix": "Internet",
+                  "sourcePortRange": "*"
+                },
+                "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+              },
+              {
+                "name": "AllowHTTPSInbound",
+                "properties": {
+                  "access": "Allow",
+                  "destinationAddressPrefix": "*",
+                  "destinationPortRange": "443",
+                  "direction": "Inbound",
+                  "priority": 501,
+                  "protocol": "Tcp",
+                  "sourceAddressPrefix": "Internet",
+                  "sourcePortRange": "*"
+                },
+                "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+              }
+            ]
+          }
+        }
       }
     },
     {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2023-04-01",
+      "name": "[concat(variables('vnetSettings').name, '-aks-subnet-nsg')]",
+      "location": "[parameters('location')]",
+        "properties": {
+          "flushConnection": false,
+          "securityRules": [
+            {
+              "name": "AllowHTTPInbound",
+              "properties": {
+                "access": "Allow",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "80",
+                "direction": "Inbound",
+                "priority": 500,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "Internet",
+                "sourcePortRange": "*"
+              },
+              "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+            },
+            {
+              "name": "AllowHTTPSInbound",
+              "properties": {
+                "access": "Allow",
+                "destinationAddressPrefix": "*",
+                "destinationPortRange": "443",
+                "direction": "Inbound",
+                "priority": 501,
+                "protocol": "Tcp",
+                "sourceAddressPrefix": "Internet",
+                "sourcePortRange": "*"
+              },
+              "type": "Microsoft.Network/networkSecurityGroups/securityRules"
+            }
+          ]
+        }
+    },
+    {      
       "type": "Microsoft.ContainerService/managedClusters/agentPools",
       "apiVersion": "2023-01-02-preview",
       "name": "[concat(variables('aksSettings').name, '/agentpool')]",
@@ -508,6 +645,10 @@
     "resourcePrefix": {
       "type": "string",
       "value": "[parameters('name')]"
+    },
+    "cosmosDbAccountName": {
+      "type": "string",
+      "value": "[variables('cosmosDbSettings').name]"
     }
   }
 }

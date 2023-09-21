@@ -5,20 +5,21 @@ Param(
     [parameter(Mandatory=$true)][string]$resourceGroup,
     [parameter(Mandatory=$true)][string]$location,
     [parameter(Mandatory=$true)][string]$subscription,
-    [parameter(Mandatory=$false)][string]$armTemplate="starter-azuredeploy.json",
+    [parameter(Mandatory=$false)][string]$armTemplate=$null,
     [parameter(Mandatory=$false)][string]$openAiName=$null,
     [parameter(Mandatory=$false)][string]$openAiRg=$null,
     [parameter(Mandatory=$false)][string]$openAiCompletionsDeployment=$null,
     [parameter(Mandatory=$false)][string]$openAiEmbeddingsDeployment=$null,
     [parameter(Mandatory=$false)][bool]$stepDeployArm=$true,
-    [parameter(Mandatory=$false)][bool]$stepDeployOpenAi=$false,
+    [parameter(Mandatory=$false)][bool]$stepDeployOpenAi=$true,
     [parameter(Mandatory=$false)][bool]$stepBuildPush=$false,
     [parameter(Mandatory=$false)][bool]$stepDeployCertManager=$true,
     [parameter(Mandatory=$false)][bool]$stepDeployTls=$true,
     [parameter(Mandatory=$false)][bool]$stepDeployImages=$false,
     [parameter(Mandatory=$false)][bool]$stepUploadSystemPrompts=$true,
     [parameter(Mandatory=$false)][bool]$stepImportData=$false,
-    [parameter(Mandatory=$false)][bool]$stepLoginAzure=$true
+    [parameter(Mandatory=$false)][bool]$stepLoginAzure=$true,
+    [parameter(Mandatory=$false)][bool]$deployAks=$false
 )
 
 Push-Location $($MyInvocation.InvocationName | Split-Path)
@@ -40,6 +41,7 @@ Push-Location $($MyInvocation.InvocationName | Split-Path)
                        -stepDeployImages $stepDeployImages `
                        -stepUploadSystemPrompts $stepUploadSystemPrompts `
                        -stepImportData $stepImportData `
-                       -stepLoginAzure $stepLoginAzure
+                       -stepLoginAzure $stepLoginAzure `
+                       -deployAks $deployAks
 
 Pop-Location
