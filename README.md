@@ -131,7 +131,15 @@ You can run the website and the REST API that supports it locally. You need to f
         "Logging": {
             "LogLevel": {
                 "Default": "Information",
-                "Microsoft.AspNetCore": "Warning"
+                "Microsoft.AspNetCore": "Warning",
+                "Microsoft.SemanticKernel": "Error"
+            },
+            "ApplicationInsights": {
+                "LogLevel": {
+                    "Default": "Information",
+                    "Microsoft.AspNetCore": "Warning",
+                    "Microsoft.SemanticKernel": "Error"
+                }
             }
         },
         "AllowedHosts": "*",
@@ -142,7 +150,7 @@ You can run the website and the REST API that supports it locally. You need to f
             },
             "OpenAI": {
                 "CompletionsDeployment": "completions",
-                "CompletionsDeploymentMaxTokens": 4096,
+                "CompletionsDeploymentMaxTokens": 8096,
                 "EmbeddingsDeployment": "embeddings",
                 "EmbeddingsDeploymentMaxTokens": 8191,
                 "ChatCompletionPromptName": "RetailAssistant.Default",
@@ -151,19 +159,29 @@ You can run the website and the REST API that supports it locally. You need to f
                     "CompletionsMinTokens": 50,
                     "CompletionsMaxTokens": 300,
                     "SystemMaxTokens": 1500,
-                    "MemoryMinTokens": 500,
-                    "MemoryMaxTokens": 2500,
-                    "MessagesMinTokens": 1000,
-                    "MessagesMaxTokens": 3000
+                    "MemoryMinTokens": 1500,
+                    "MemoryMaxTokens": 700,
+                    "MessagesMinTokens": 100,
+                    "MessagesMaxTokens": 200
                 }
             },
             "CosmosDB": {
                 "Containers": "completions, customer, product",
+                "MonitoredContainers": "customer, product",
                 "Database": "database",
                 "ChangeFeedLeaseContainer": "leases"
             },
             "DurableSystemPrompt": {
                 "BlobStorageContainer": "system-prompt"
+            },
+            "CognitiveSearchMemorySource": {
+                "IndexName": "vector-index",
+                "ConfigBlobStorageContainer": "memory-source",
+                "ConfigFilePath": "ACSMemorySourceConfig.json"
+            },
+            "BlobStorageMemorySource": {
+                "ConfigBlobStorageContainer": "memory-source",
+                "ConfigFilePath": "BlobMemorySourceConfig.json"
             }
         }
     }
@@ -188,7 +206,14 @@ You can run the website and the REST API that supports it locally. You need to f
             },
             "DurableSystemPrompt": {
                 "BlobStorageConnection": "<...>"
-            }
+            },
+            "CognitiveSearchMemorySource": {
+                "Endpoint": "https://<...>.search.windows.net",
+                "Key": "<...>"
+            },
+            "BlobStorageMemorySource": {
+                "ConfigBlobStorageConnection": "<...>"
+            },
         }
     }
     ```
