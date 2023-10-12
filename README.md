@@ -31,11 +31,11 @@ The following steps will guide you through the process needed to being the hacka
 
 ### Clone this repo
 
-Clone this repository and change to the `cognitive-search-vector` branch
+Clone this repository and change to the `main` branch
 
 ```pwsh
-git clone https://github.com/...
-git checkout cognitive-search-vector
+git clone https://github.com/Azure/Build-Modern-AI-Apps-Hackathon
+git checkout main
 ```
 
 ### Deploy to Azure the core services
