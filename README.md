@@ -53,6 +53,14 @@ git checkout main
 >If `<resource-group-name>` already exists, your user must have `Owner` permissions on the resource group.
 >If `<resource-group-name>` does not exist exists, the deployment script will create it. In this case, your user must have `Owner` permissions on the subscription in which the resource group will be created.
 
+>**NOTE**:
+>
+>By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
+>```pwsh
+>-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> >-openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
+>```
+>In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
+
 ### Verify initial deployment
 
 
