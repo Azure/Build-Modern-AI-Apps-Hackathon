@@ -61,21 +61,39 @@ git checkout main
 >```
 >In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
 
+### Decide on the containerization approach
+
+The deployment script supports two types of containerization:
+- [Azure Container Apps - ACA](https://azure.microsoft.com/en-us/products/container-apps) - this is default option. It allows you to deploy containerized applications without having to manage the underlying infrastructure, thus being the easiest option to get started with.
+- [Azure Kubernetes Service - AKS](https://azure.microsoft.com/en-us/services/kubernetes-service) - this option allows you to deploy the application into an AKS cluster. This option is more complex to set up, but it provides more flexibility and control over the deployment. To use AKS, pass the following parameter to the deployment script:
+    ```pwsh
+    -deployAks $true
+    ```
+For the purpose of this hackathon, we recommend using Azure Container Apps. Depending on your preference, you can choose to use AKS instead.
+
+>**NOTE**:
+>
+>For the reminder of this hackathon, please interpret any documentation references to `AKS` as `ACA` if you chose to use Azure Container Apps (and viceversa).
+
 ### Verify initial deployment
 
 
 1. After the command completes, navigate to resource group and obtain the name of the AKS service.
-2. Execute the following command to obtain the website's endpoint
+2. Execute the following command to obtain the website's endpoint:
 
-  ```pwsh
-  az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
-  ```
+    For AKS:
 
-```pwsh
-az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
-```
+    ```pwsh
+    az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
+    ```
 
-3. Browse to the website with the returned hostname.
+    For ACA:
+
+    ```pwsh
+    az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
+    ```
+
+1. Browse to the website with the returned hostname.
 
 If the website loads, you are ready to continue with the hackathon challenges. Don't worry if the website is not fully operational yet - you will get it there!
 
