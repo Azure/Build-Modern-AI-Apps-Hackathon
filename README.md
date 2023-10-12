@@ -48,6 +48,11 @@ git checkout main
 ./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
 ```
 
+>**NOTE**:
+>
+>If `<resource-group-name>` already exists, your user must have `Owner` permissions on the resource group.
+>If `<resource-group-name>` does not exist exists, the deployment script will create it. In this case, your user must have `Owner` permissions on the subscription in which the resource group will be created.
+
 ### Verify initial deployment
 
 
@@ -57,6 +62,11 @@ git checkout main
   ```pwsh
   az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
   ```
+
+```pwsh
+az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
+```
+
 3. Browse to the website with the returned hostname.
 
 If the website loads, you are ready to continue with the hackathon challenges. Don't worry if the website is not fully operational yet - you will get it there!
