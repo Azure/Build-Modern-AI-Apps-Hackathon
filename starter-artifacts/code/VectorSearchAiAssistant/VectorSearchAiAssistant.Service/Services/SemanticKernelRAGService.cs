@@ -150,7 +150,7 @@ public class SemanticKernelRAGService : IRAGService
         else
             memoryCollection = JsonConvert.DeserializeObject<List<string>>(memories);
 
-        var chatHistory = new ChatBuilder(
+        var chatBuilder = new ChatBuilder(
                 _semanticKernel,
                 _settings.OpenAI.CompletionsDeploymentMaxTokens,
                 _memoryTypes,
@@ -160,7 +160,7 @@ public class SemanticKernelRAGService : IRAGService
          * Uncomment and complete the following chain to add the
          * SystemPrompt, Memories, and MessageHistory in the correct order.
          */
-        //chatHistory
+        //var chatHistory = chatBuilder
         //    .With_____(
         //        await _systemPromptService.GetPrompt(_settings.OpenAI.ChatCompletionPromptName))
         //    .With_____(
