@@ -160,7 +160,7 @@ You can run the website and the REST API that supports it locally. You need to f
                     "CompletionsMaxTokens": 300,
                     "SystemMaxTokens": 1500,
                     "MemoryMinTokens": 1500,
-                    "MemoryMaxTokens": 700,
+                    "MemoryMaxTokens": 7000,
                     "MessagesMinTokens": 100,
                     "MessagesMaxTokens": 200
                 }
