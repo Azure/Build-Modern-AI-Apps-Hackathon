@@ -90,11 +90,6 @@
       }
     },
     "cosmosContainers": {
-      "embeddingContainer": {
-        "name": "embedding",
-        "partitionKeyPath": "/id",
-        "maxThroughput": 1000
-      },
       "completionsContainer": {
         "name": "completions",
         "partitionKeyPath": "/sessionId",
