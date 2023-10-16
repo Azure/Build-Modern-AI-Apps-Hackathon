@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿// Simple testbed used to explore the use of the services outside of the main API project
+
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using VectorSearchAiAssistant.Service.Interfaces;
 using VectorSearchAiAssistant.Service.Models.ConfigurationOptions;
