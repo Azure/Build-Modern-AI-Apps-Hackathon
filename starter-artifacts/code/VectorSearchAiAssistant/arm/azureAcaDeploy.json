@@ -90,11 +90,6 @@
       }
     },
     "cosmosContainers": {
-      "embeddingContainer": {
-        "name": "embedding",
-        "partitionKeyPath": "/id",
-        "maxThroughput": 1000
-      },
       "completionsContainer": {
         "name": "completions",
         "partitionKeyPath": "/sessionId",
@@ -615,7 +610,28 @@
           "environmentId": "[resourceId('Microsoft.App/managedEnvironments', format('{0}acaenv', parameters('name')))]",
           "workloadProfileName": "Warm",
           "configuration": {
-              "secrets": [],
+              "secrets": [
+              {
+                "name": "openaikey-secret",
+                "value": "[parameters('openAiKey')]"
+              },
+              {
+                "name": "cogsearchkey-secret",
+                "value": "[listAdminKeys(resourceId('Microsoft.Search/searchServices', variables('cognitiveSearchSettings').name), '2022-09-01').primaryKey]"
+              },
+              {
+                "name": "cosmosdbkey-secret",
+                "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbSettings').name), providers('Microsoft.DocumentDB', 'databaseAccounts').apiVersions[0]).primaryMasterKey]"
+              },
+              {
+                "name": "blobstoragekey-secret",
+                "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', format('{0}promptsa', parameters('name')), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', format('{0}promptsa', parameters('name'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+              },
+              {
+                "name": "appinsights-secret",
+                "value": "[reference(resourceId('Microsoft.Insights/components', variables('aiSettings').name), providers('Microsoft.Insights', 'components').apiVersions[0]).connectionString]"
+              }
+            ],
               "activeRevisionsMode": "Single",
               "ingress": {
                   "external": true,
@@ -655,8 +671,8 @@
                               "value": "[concat('https://', variables('cognitiveSearchSettings').name, '.search.windows.net/')]"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__CognitiveSearch__Key",
-                              "value": "[listAdminKeys(resourceId('Microsoft.Search/searchServices', variables('cognitiveSearchSettings').name), '2022-09-01').primaryKey]"
+                            "name": "MSCosmosDBOpenAI__CognitiveSearch__Key",
+                            "secretRef": "cogsearchkey-secret"
                           },
                           {
                               "name": "MSCosmosDBOpenAI__OpenAI__CompletionsDeployment",
@@ -715,8 +731,8 @@
                               "value": "[parameters('openAiEndpoint')]"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__OpenAI__Key",
-                              "value": "[parameters('openAiKey')]"
+                            "name": "MSCosmosDBOpenAI__OpenAI__Key",
+                            "secretRef": "openaikey-secret"
                           },
                           {
                               "name": "MSCosmosDBOpenAI__CosmosDB__Containers",
@@ -739,16 +755,16 @@
                               "value": "[reference(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbSettings').name), providers('Microsoft.DocumentDB', 'databaseAccounts').apiVersions[0]).documentEndpoint]"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__CosmosDB__Key",
-                              "value": "[listKeys(resourceId('Microsoft.DocumentDB/databaseAccounts', variables('cosmosDbSettings').name), providers('Microsoft.DocumentDB', 'databaseAccounts').apiVersions[0]).primaryMasterKey]"
+                            "name": "MSCosmosDBOpenAI__CosmosDB__Key",
+                            "secretRef": "cosmosdbkey-secret"
                           },
                           {
                               "name": "MSCosmosDBOpenAI__DurableSystemPrompt__BlobStorageContainer",
                               "value": "system-prompt"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__DurableSystemPrompt__BlobStorageConnection",
-                              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', format('{0}promptsa', parameters('name')), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', format('{0}promptsa', parameters('name'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            "name": "MSCosmosDBOpenAI__DurableSystemPrompt__BlobStorageConnection",
+                            "secretRef": "blobstoragekey-secret"
                           },
                           {
                               "name": "MSCosmosDBOpenAI__CognitiveSearchMemorySource__IndexName",
@@ -767,12 +783,12 @@
                               "value": "[concat('https://', variables('cognitiveSearchSettings').name, '.search.windows.net/')]"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__CognitiveSearchMemorySource__Key",
-                              "value": "[listAdminKeys(resourceId('Microsoft.Search/searchServices', variables('cognitiveSearchSettings').name), '2022-09-01').primaryKey]"
+                            "name": "MSCosmosDBOpenAI__CognitiveSearchMemorySource__Key",
+                            "secretRef": "cogsearchkey-secret"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__CognitiveSearchMemorySource__ConfigBlobStorageConnection",
-                              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', format('{0}promptsa', parameters('name')), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', format('{0}promptsa', parameters('name'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            "name": "MSCosmosDBOpenAI__CognitiveSearchMemorySource__ConfigBlobStorageConnection",
+                            "secretRef": "blobstoragekey-secret"
                           },
                           {
                               "name": "MSCosmosDBOpenAI__BlobStorageMemorySource__ConfigBlobStorageContainer",
@@ -783,12 +799,12 @@
                               "value": "BlobMemorySourceConfig.json"
                           },
                           {
-                              "name": "MSCosmosDBOpenAI__BlobStorageMemorySource__ConfigBlobStorageConnection",
-                              "value": "[concat('DefaultEndpointsProtocol=https;AccountName=', format('{0}promptsa', parameters('name')), ';AccountKey=', listKeys(resourceId('Microsoft.Storage/storageAccounts', format('{0}promptsa', parameters('name'))), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value, ';EndpointSuffix=core.windows.net')]"
+                            "name": "MSCosmosDBOpenAI__BlobStorageMemorySource__ConfigBlobStorageConnection",
+                            "secretRef": "blobstoragekey-secret"
                           },
                           {
-                              "name": "ApplicationInsights__ConnectionString",
-                              "value": "[reference(resourceId('Microsoft.Insights/components', variables('aiSettings').name), providers('Microsoft.Insights', 'components').apiVersions[0]).connectionString]"
+                            "name": "ApplicationInsights__ConnectionString",
+                            "secretRef": "appinsights-secret"
                           }
                       ],
                       "resources": {

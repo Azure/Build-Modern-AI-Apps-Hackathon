@@ -18,6 +18,11 @@ using Newtonsoft.Json.Linq;
 using Azure.Core.Serialization;
 using System.Reflection.Metadata;
 
+/// NOTE:
+/// At the time of this code's development, Semantic Kernel was lacking a proper implementation for using Cognitive Search's vector index capabilities.
+/// Semantic Kernel now has a more complete implementation of AzureCognitiveSearchVectorMemory.
+/// For details, see https://github.com/microsoft/semantic-kernel/blob/main/dotnet/src/Connectors/Connectors.Memory.AzureCognitiveSearch/AzureCognitiveSearchMemoryStore.cs
+
 namespace VectorSearchAiAssistant.SemanticKernel.Connectors.Memory.AzureCognitiveSearch
 {
     /// <summary>

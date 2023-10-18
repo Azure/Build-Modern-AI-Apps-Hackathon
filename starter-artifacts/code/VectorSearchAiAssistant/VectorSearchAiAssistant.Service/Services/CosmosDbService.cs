@@ -126,6 +126,10 @@ namespace VectorSearchAiAssistant.Service.Services
                 //    _logger.LogInformation($"Initialized the change feed processor for the {__} container.");
                 //}
 
+                // NOTE: Add .WithStartTime(DateTime.MinValue.ToUniversalTime()) above (before .Build()) to ensure the 
+                // change feed will process data from the begining of the container's lifetime.
+                // For more details, see https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-processor?tabs=dotnet#reading-from-the-beginning.
+
                 _changeFeedsInitialized = true;
                 _logger.LogInformation("Cosmos DB change feed processors initialized.");
             }
