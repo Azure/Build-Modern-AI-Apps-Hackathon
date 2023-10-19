@@ -40,7 +40,7 @@ Your team must:
 
 To complete this challenge successfully, you must:
 
-- Deploy Azure Cosmos DB with the NoSQL API. It should have a database named `database` and containers named `completions` with a partition key of `/sessionId`, `customer` with a partition key of `/customerId`, `embedding` with a partition key of `/id`, and `product` with a partition key of `/categoryId`. You only need to deploy the account to a single region. Make a best guess at the RU/s for each container. You will adjust these in a later challenge based on performance and cost.
+- Deploy Azure Cosmos DB with the NoSQL API. It should have a database named `database` and containers named `completions` with a partition key of `/sessionId`, `customer` with a partition key of `/customerId`, `embedding` with a partition key of `/id`, `product` with a partition key of `/categoryId`, and `leases` with a partition key of `/id`. You only need to deploy the account to a single region. Make a best guess at the RU/s for each container. You will adjust these in a later challenge based on performance and cost.
 - Deploy Azure OpenAI with the following deployments:
   - `completions` with the `gpt-35-turbo` model
   - `embeddings` with the `text-embedding-ada-002` model

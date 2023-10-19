@@ -31,11 +31,11 @@ The following steps will guide you through the process needed to being the hacka
 
 ### Clone this repo
 
-Clone this repository and change to the `cognitive-search-vector` branch
+Clone this repository and change to the `main` branch
 
 ```pwsh
-git clone https://github.com/...
-git checkout cognitive-search-vector
+git clone https://github.com/Azure/Build-Modern-AI-Apps-Hackathon
+git checkout main
 ```
 
 ### Deploy to Azure the core services
@@ -48,16 +48,52 @@ git checkout cognitive-search-vector
 ./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
 ```
 
+>**NOTE**:
+>
+>If `<resource-group-name>` already exists, your user must have `Owner` permissions on the resource group.
+>If `<resource-group-name>` does not exist exists, the deployment script will create it. In this case, your user must have `Owner` permissions on the subscription in which the resource group will be created.
+
+>**NOTE**:
+>
+>By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
+>```pwsh
+>-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> >-openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
+>```
+>In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
+
+### Decide on the containerization approach
+
+The deployment script supports two types of containerization:
+- [Azure Container Apps - ACA](https://azure.microsoft.com/en-us/products/container-apps) - this is default option. It allows you to deploy containerized applications without having to manage the underlying infrastructure, thus being the easiest option to get started with.
+- [Azure Kubernetes Service - AKS](https://azure.microsoft.com/en-us/services/kubernetes-service) - this option allows you to deploy the application into an AKS cluster. This option is more complex to set up, but it provides more flexibility and control over the deployment. To use AKS, pass the following parameter to the deployment script:
+    ```pwsh
+    -deployAks $true
+    ```
+For the purpose of this hackathon, we recommend using Azure Container Apps. Depending on your preference, you can choose to use AKS instead.
+
+>**NOTE**:
+>
+>For the reminder of this hackathon, please interpret any documentation references to `AKS` as `ACA` if you chose to use Azure Container Apps (and viceversa).
+
 ### Verify initial deployment
 
 
 1. After the command completes, navigate to resource group and obtain the name of the AKS service.
-2. Execute the following command to obtain the website's endpoint
+2. Execute the following command to obtain the website's endpoint:
 
-  ```pwsh
-  az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
-  ```
-3. Browse to the website with the returned hostname.
+    For AKS:
+
+    ```pwsh
+    az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
+    ```
+
+    For ACA:
+
+    ```pwsh
+    az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
+    ```
+
+1. Browse to the website with the returned hostname.
 
 If the website loads, you are ready to continue with the hackathon challenges. Don't worry if the website is not fully operational yet - you will get it there!
 
@@ -95,7 +131,15 @@ You can run the website and the REST API that supports it locally. You need to f
         "Logging": {
             "LogLevel": {
                 "Default": "Information",
-                "Microsoft.AspNetCore": "Warning"
+                "Microsoft.AspNetCore": "Warning",
+                "Microsoft.SemanticKernel": "Error"
+            },
+            "ApplicationInsights": {
+                "LogLevel": {
+                    "Default": "Information",
+                    "Microsoft.AspNetCore": "Warning",
+                    "Microsoft.SemanticKernel": "Error"
+                }
             }
         },
         "AllowedHosts": "*",
@@ -106,7 +150,7 @@ You can run the website and the REST API that supports it locally. You need to f
             },
             "OpenAI": {
                 "CompletionsDeployment": "completions",
-                "CompletionsDeploymentMaxTokens": 4096,
+                "CompletionsDeploymentMaxTokens": 8096,
                 "EmbeddingsDeployment": "embeddings",
                 "EmbeddingsDeploymentMaxTokens": 8191,
                 "ChatCompletionPromptName": "RetailAssistant.Default",
@@ -115,19 +159,29 @@ You can run the website and the REST API that supports it locally. You need to f
                     "CompletionsMinTokens": 50,
                     "CompletionsMaxTokens": 300,
                     "SystemMaxTokens": 1500,
-                    "MemoryMinTokens": 500,
-                    "MemoryMaxTokens": 2500,
-                    "MessagesMinTokens": 1000,
-                    "MessagesMaxTokens": 3000
+                    "MemoryMinTokens": 1500,
+                    "MemoryMaxTokens": 7000,
+                    "MessagesMinTokens": 100,
+                    "MessagesMaxTokens": 200
                 }
             },
             "CosmosDB": {
                 "Containers": "completions, customer, product",
+                "MonitoredContainers": "customer, product",
                 "Database": "database",
                 "ChangeFeedLeaseContainer": "leases"
             },
             "DurableSystemPrompt": {
                 "BlobStorageContainer": "system-prompt"
+            },
+            "CognitiveSearchMemorySource": {
+                "IndexName": "vector-index",
+                "ConfigBlobStorageContainer": "memory-source",
+                "ConfigFilePath": "ACSMemorySourceConfig.json"
+            },
+            "BlobStorageMemorySource": {
+                "ConfigBlobStorageContainer": "memory-source",
+                "ConfigFilePath": "BlobMemorySourceConfig.json"
             }
         }
     }
@@ -152,7 +206,14 @@ You can run the website and the REST API that supports it locally. You need to f
             },
             "DurableSystemPrompt": {
                 "BlobStorageConnection": "<...>"
-            }
+            },
+            "CognitiveSearchMemorySource": {
+                "Endpoint": "https://<...>.search.windows.net",
+                "Key": "<...>"
+            },
+            "BlobStorageMemorySource": {
+                "ConfigBlobStorageConnection": "<...>"
+            },
         }
     }
     ```
