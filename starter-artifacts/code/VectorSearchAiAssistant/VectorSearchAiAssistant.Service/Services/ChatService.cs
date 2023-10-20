@@ -113,6 +113,9 @@ public class ChatService : IChatService
             // Add both prompt and completion to cache, then persist in Cosmos DB
             // TODO: Replace the default parameters on the following lines
             // to create the promptMessage and completionMessage objects that will be persisted to Cosmos DB
+            // The parameters marked with __ are the one that should be replaced:
+            //      var promptMessage = new Message(sessionId, __, __, __, __, null);
+            //      var completionMessage = new Message(sessionId, __, __, __, null, null);
             var promptMessage = new Message(sessionId, "", 0, "", null, null);
             var completionMessage = new Message(sessionId, "", 0, "", null, null);
 
