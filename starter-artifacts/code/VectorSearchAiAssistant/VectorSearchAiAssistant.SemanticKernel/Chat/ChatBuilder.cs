@@ -92,9 +92,11 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
                 ? string.Empty
                 : _systemPrompt;
 
-            /* TODO: Serialize _memories to a JSON string 
+            /* TODO: 
+             * Build the memories section of the prompt (memoriesPrompt) by
+             * serializing _memories to a JSON string 
              * Build the sytemMessage string so that it has the form:
-             *  "systemMessage newline newline jsonMemories"  
+             *  "systemMessage newline newline memoriesPrompt"
              */
             if (_memories.Count > 0)
             {
