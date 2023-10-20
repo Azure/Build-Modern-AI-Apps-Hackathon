@@ -186,6 +186,7 @@ public class SemanticKernelRAGService : IRAGService
         //var rawResult = (completionResults[0] as ITextResult).ModelResult.GetOpenAIChatResult();
 
         //TODO: Replace the following return value with the correct values according to function signature
+        // (all default values below should be replaced).
         return new("", "", 0, 0, null);
     }
 
