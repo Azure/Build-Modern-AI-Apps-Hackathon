@@ -90,7 +90,7 @@ For the purpose of this hackathon, we recommend using Azure Container Apps. Depe
     For ACA:
 
     ```pwsh
-    az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
+    az deployment group show -g <resource-group-name> -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
     ```
 
 1. Browse to the website with the returned hostname.
