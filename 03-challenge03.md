@@ -19,7 +19,7 @@ Your team must:
    3. Only answer questions related to the information provided.
    4. Not to "make up" information and to respond that it does not know the answer to suggest to the user to search for it themselves.
    5. Make sure the prompt ends with "Text of relevant information:" as after that the system will inject context data and chat history. 
-3. Upload the system prompt file to the Azure Storage Account, place it under the path `system-prompt / RetailAssistant` overwriting the file that is there.
+3. Upload the system prompt file you created at the previous step to the Azure Storage Account, place it under the path `system-prompt / RetailAssistant` overwriting the file that is there.
 4. Store the user's questions and the responses that were generated so the system can reload them in the future.
 
 ### Hints
