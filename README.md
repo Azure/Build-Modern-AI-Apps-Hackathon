@@ -39,11 +39,11 @@ cd .\Build-Modern-AI-Apps-Hackathon\
 git checkout main
 ```
 
-### Deploy to Azure the core services
+### Deploy the Azure core services
 
 1. Open the PowerShell command line and navigate to the directory where you cloned the repo.
 2. Navigate into the `starter-artifacts\code\VectorSearchAiAssistant` folder.
-3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into AKS, and import data into Cosmos.
+3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into Azure Container Apps (ACA), and import data into Cosmos. 
 
 ```pwsh
 ./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
