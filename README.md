@@ -35,6 +35,7 @@ Clone this repository and change to the `main` branch
 
 ```pwsh
 git clone https://github.com/Azure/Build-Modern-AI-Apps-Hackathon
+cd .\Build-Modern-AI-Apps-Hackathon\
 git checkout main
 ```
 
