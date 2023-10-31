@@ -35,14 +35,15 @@ Clone this repository and change to the `main` branch
 
 ```pwsh
 git clone https://github.com/Azure/Build-Modern-AI-Apps-Hackathon
+cd .\Build-Modern-AI-Apps-Hackathon\
 git checkout main
 ```
 
-### Deploy to Azure the core services
+### Deploy the Azure core services
 
 1. Open the PowerShell command line and navigate to the directory where you cloned the repo.
 2. Navigate into the `starter-artifacts\code\VectorSearchAiAssistant` folder.
-3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into AKS, and import data into Cosmos.
+3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into Azure Container Apps (ACA), and import data into Cosmos. 
 
 ```pwsh
 ./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
@@ -57,7 +58,7 @@ git checkout main
 >
 >By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
 >```pwsh
->-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> >-openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
+>-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> -openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
 >```
 >In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
 
@@ -90,7 +91,7 @@ For the purpose of this hackathon, we recommend using Azure Container Apps. Depe
     For ACA:
 
     ```pwsh
-    az deployment group show -g $resourceGroup -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
+    az deployment group show -g <resource-group-name> -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
     ```
 
 1. Browse to the website with the returned hostname.
