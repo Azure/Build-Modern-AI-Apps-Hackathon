@@ -64,6 +64,7 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
         {
             ArgumentNullException.ThrowIfNull(memories, nameof(memories));
 
+            // This function transforms the JSON into a more streamlined string of text, more suitable for generating responses
             // Use by default the JSON text representation based on EmbeddingFieldAttribute
             // TODO: Test also using the more elaborate text representation - itemToEmbed.TextToEmbed
             _memories = memories.Select(m => (object) EmbeddingUtility.Transform(m, _memoryTypes).TextToEmbed).ToList();
@@ -92,9 +93,11 @@ namespace VectorSearchAiAssistant.SemanticKernel.Chat
                 ? string.Empty
                 : _systemPrompt;
 
-            /* TODO: Serialize _memories to a JSON string 
+            /* TODO: 
+             * Build the memories section of the prompt (memoriesPrompt) by
+             * serializing _memories to a JSON string 
              * Build the sytemMessage string so that it has the form:
-             *  "systemMessage newline newline jsonMemories"  
+             *  "systemMessage newline newline memoriesPrompt"
              */
             if (_memories.Count > 0)
             {

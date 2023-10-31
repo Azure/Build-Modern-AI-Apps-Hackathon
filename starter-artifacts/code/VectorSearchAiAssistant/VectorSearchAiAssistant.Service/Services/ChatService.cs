@@ -107,12 +107,15 @@ public class ChatService : IChatService
             var messages = await _cosmosDbService.GetSessionMessagesAsync(sessionId);
 
             // Generate the completion to return to the user
-            //(string completion, int promptTokens, int responseTokens) = await_openAiService.GetChatCompletionAs ync(sessionId, conversation, retrievedDocuments);
+            //(string completion, int promptTokens, int responseTokens) = await openAiService.GetChatCompletionAsync(sessionId, conversation, retrievedDocuments);
             var result = await _ragService.GetResponse(userPrompt, messages);
 
             // Add both prompt and completion to cache, then persist in Cosmos DB
             // TODO: Replace the default parameters on the following lines
             // to create the promptMessage and completionMessage objects that will be persisted to Cosmos DB
+            // The parameters marked with __ are the one that should be replaced:
+            //      var promptMessage = new Message(sessionId, __, __, __, __, null);
+            //      var completionMessage = new Message(sessionId, __, __, __, null, null);
             var promptMessage = new Message(sessionId, "", 0, "", null, null);
             var completionMessage = new Message(sessionId, "", 0, "", null, null);
 
