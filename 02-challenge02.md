@@ -11,18 +11,18 @@ CosmicWorks has done some research, and they would like to use Microsoft Semanti
 Your team must:
 
 
-1. Create a vector index in Azure Cognitive Search. They had some ideas on this that they provided in the starter project.
-2. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. They have provided a starter template for you that they had created for another effort.
-3. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. Cosmicworks has provided the data for you to start with, listed in the resources below.
+1. Implement an efficient and repeatable way to load product and customer data from the storage account into Cosmos DB. For this exercise, you only need to load the data once, but CosmicWorks wants to be able to repeat the process in the future with new data. Cosmicworks has provided the data for you to start with, listed in the resources below.
+2. Create a vector index in Azure Cognitive Search. They had some ideas on this that they provided in the starter project.
+3. Create a process to index product and customer data from Cosmos DB using the change feed to load the documents into an Azure Cognitive Search vector index. They have provided a starter template for you that they had created for another effort.
 4. Verify that the data was loaded into Cosmos DB and Cognitive Search.
 
 
 ### Hints
 
-- Search thru the solution for the `TODO: Challenge 2` comments and follow the instructions provided.
-- Think about how you build the logic for accessing the Azure OpenAI service to perform the vector embeddings of the product and customer documents. You will use this same logic layer to perform other Azure OpenAI tasks in later challenges.
 - CosmicWorks suggest using the Azure Cosmos DB Desktop Data Migration Tool to load their sample files from their Azure Storage into your instance of Cosmos DB. They suggest you do a "Quick Install" of the tool. They have provided the `migrationsettings.template.json` in the root of the starter repo that contains the parameters you should use with this tool. You need to replace the `{{cosmosConnectionString}}` instances in the JSON file with the connection string to your deployed instance of Cosmos DB.
+- Search thru the solution for the `TODO: Challenge 2` comments and follow the instructions provided.
 - Think about how you can use the Cosmos DB Change Feed to trigger the creation of vector embeddings for new/updated products and customers.
+- Think about how you build the logic for accessing the Azure OpenAI service to perform the vector embeddings of the product and customer documents. You will use this same logic layer to perform other Azure OpenAI tasks in later challenges.
 
 ### Success Criteria
 
