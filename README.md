@@ -15,6 +15,7 @@ This hackathon will challenge you and your team to launch a POC of a chat interf
 - Create a process that manages the conversation flow, vectorization, search, data handling, and response generation
 - Externally manage system prompts
 
+
 ## Prerequisites
 
 - Azure Subscription
@@ -22,7 +23,6 @@ This hackathon will challenge you and your team to launch a POC of a chat interf
 - .NET 7 SDK
 - Docker Desktop
 - Azure CLI 2.49.0
-- Helm v3.11.1 or greater - https://helm.sh/
 - Subscription with access to the Azure OpenAI Service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
 
 ## Setting up your development environment
@@ -57,16 +57,19 @@ git checkout main
 >**NOTE**:
 >
 >By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
+
 >```pwsh
 >-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> -openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
 >```
 >In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
 
+>If using your own Azure OpenAI account, it will be necessary to update the appsettings.json file in the `ChatServiceWebApi` project to use the model deployment names used in your existing Azure OpenAI account. See **Configure Local Settings section below** for more details.
+
 ### Decide on the containerization approach
 
 The deployment script supports two types of containerization:
-- [Azure Container Apps - ACA](https://azure.microsoft.com/en-us/products/container-apps) - this is default option. It allows you to deploy containerized applications without having to manage the underlying infrastructure, thus being the easiest option to get started with.
-- [Azure Kubernetes Service - AKS](https://azure.microsoft.com/en-us/services/kubernetes-service) - this option allows you to deploy the application into an AKS cluster. This option is more complex to set up, but it provides more flexibility and control over the deployment. To use AKS, pass the following parameter to the deployment script:
+- [Azure Container Apps - ACA](https://azure.microsoft.com/products/container-apps) - this is default option. It allows you to deploy containerized applications without having to manage the underlying infrastructure, thus being the easiest option to get started with.
+- [Azure Kubernetes Service - AKS](https://azure.microsoft.com/services/kubernetes-service) - this option allows you to deploy the application into an AKS cluster. This option is more complex to set up, but it provides more flexibility and control over the deployment. To use AKS, pass the following parameter to the deployment script:
     ```pwsh
     -deployAks $true
     ```
@@ -82,21 +85,38 @@ For the purpose of this hackathon, we recommend using Azure Container Apps. Depe
 1. After the command completes, navigate to resource group and obtain the name of the AKS service.
 2. Execute the following command to obtain the website's endpoint:
 
-    For AKS:
-
-    ```pwsh
-    az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
-    ```
-
     For ACA:
 
     ```pwsh
     az deployment group show -g <resource-group-name> -n cosmosdb-openai-azuredeploy -o json --query properties.outputs.webFqdn.value
     ```
 
+    For AKS:
+
+    ```pwsh
+    az aks show -n <aks-name> -g <resource-group-name> -o tsv --query addonProfiles.httpApplicationRouting.config.HTTPApplicationRoutingZoneName
+    ```
+
 1. Browse to the website with the returned hostname.
 
 If the website loads, you are ready to continue with the hackathon challenges. Don't worry if the website is not fully operational yet - you will get it there!
+
+
+## Service Architecture
+
+After the deployment is complete the following Azure services will be deployed.
+
+- Azure OpenAI Service
+- Azure Cosmos DB
+- Azure Cognitive Search
+- Azure Container Apps (or AKS) 
+- Azure Storage (*not pictured*)
+- Azure Networking (*not pictured*)
+
+<p align="center">
+    <img src="img/architecture.png" width="100%">
+</p>
+
 
 ## Run the solution locally using Visual Studio
 
@@ -104,28 +124,11 @@ You can run the website and the REST API that supports it locally. You need to f
 
 #### Configure local settings
 
-- In the `Search` project, make sure the content of the `appsettings.json` file is similar to this:
+- In the `ChatServiceWebApi` project, review the content of the `appsettings.json` file.
 
-    ```json
-    {
-        "DetailedErrors": true,
-        "Logging": {
-            "LogLevel": {
-            "Default": "Information",
-            "Microsoft.AspNetCore": "Warning"
-        }
-        },
-        "AllowedHosts": "*",
-        "MSCosmosDBOpenAI": {
-            "ChatManager": {
-                "APIUrl": "https://localhost:63279",
-                "APIRoutePrefix": ""
-            }
-        }
-    }
-    ```
-
-- In the `ChatServiceWebApi` project, make sure the content of the `appsettings.json` file is similar to this:
+>**NOTE**:
+>
+> If you deploy using a pre-existing Azure OpenAI account. You will need to update `CompletionsDeployment` and `EmbeddingsDeployment` values to match the names used for these models in your Azure OpenAI account.
 
     ```json
     {
@@ -208,13 +211,14 @@ You can run the website and the REST API that supports it locally. You need to f
             "DurableSystemPrompt": {
                 "BlobStorageConnection": "<...>"
             },
-            "CognitiveSearchMemorySource": {
-                "Endpoint": "https://<...>.search.windows.net",
-                "Key": "<...>"
-            },
             "BlobStorageMemorySource": {
                 "ConfigBlobStorageConnection": "<...>"
             },
+            "CognitiveSearchMemorySource": {
+                "Endpoint": "https://<...>.search.windows.net",
+                "Key": "<...>",
+                "ConfigBlobStorageConnection": "<...>"
+            }
         }
     }
     ```
