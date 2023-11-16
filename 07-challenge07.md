@@ -29,8 +29,10 @@ To complete this challenge successfully, you must:
 
 ### Resources
 
-[Prompt Flow on GitHub](https://github.com/Azure/promptflow)
+- [Get stated with Prompt Flow](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/get-started-prompt-flow?view=azureml-api-2#create-and-develop-your-prompt-flow)
+- [Integrate LangChain in PromptFlow](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/how-to-integrate-with-langchain?view=azureml-api-2)
+- [Deploy a flow as a managed online endpoint for real-time inference](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/how-to-deploy-for-real-time-inference?view=azureml-api-2)
 
 ## Explore Further
 
-[Use endpoints for inference](https://learn.microsoft.com/azure/machine-learning/concept-endpoints?view=azureml-api-2)
+[The Prompt Flow GitHub repository](https://github.com/microsoft/promptflow)
