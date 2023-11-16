@@ -17,9 +17,8 @@ Your team must:
 ### Hints
 
 - With the starter solution supplied by CosmicWorks open in Visual Studio, expand the VectorSearchAiAssistant.Service project, Models, Search and take a look at Product.cs. This class is required to process the data with the Cosmos DB change feed and is also used as the schema for the document added to the Cognitive Search index. You will need to define an entity similar to this for your new type of data.
-- Extend the implementation of the change feed processor located in the same project under Services, CosmosDbService.cs to use your new data type. 
-    - You need to add a new change feed processor in `StartChangeFeedProcessors`.
-    - You need to add a new change feed handler similar to `ProductChangeFeedHandler`
+- Extend the implementation of the `ModelRegistry` class to include your newly created data type.
+- Review the implementation of the change feed processor located in the same project under Services, CosmosDbService.cs to validate it is ready to use your new data type. 
 - In SemanticKernelRAGService.cs update the setup of the `_memoryTypes` in the SemanticKernelRAGService constructor to include your new type that will be used to initialize the Search index. 
 
 ### Success Criteria

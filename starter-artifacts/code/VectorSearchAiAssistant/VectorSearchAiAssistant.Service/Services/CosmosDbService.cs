@@ -155,6 +155,10 @@ namespace VectorSearchAiAssistant.Service.Services
             IReadOnlyCollection<dynamic> changes,
             CancellationToken cancellationToken)
         {
+            /* TODO: Challenge 2.  
+             * Uncomment and complete the following lines as instructed.
+             */
+
             if (changes.Count == 0)
                 return;
 
@@ -180,17 +184,19 @@ namespace VectorSearchAiAssistant.Service.Services
                     {
                         var entity = jObject.ToObject(typeMetadata.Type);
 
+                        // TODO: Add the entity to the Cognitive Search content index and the Semantic Kernel memory
+
                         // Add the entity to the Cognitive Search content index
                         // The content index is used by the Cognitive Search memory source to run create memories from faceted queries
-                        await _cognitiveSearchService.IndexItem(entity);
+                        //await _cognitiveSearchService.{__}(entity);
 
                         // Add the entity to the Semantic Kernel memory used by the RAG service
                         // We want to keep the VectorSearchAiAssistant.SemanticKernel project isolated from any domain-specific
                         // references/dependencies, so we use a generic mechanism to get the name of the entity as well as to 
                         // set the vector property on the entity.
-                        await _ragService.AddMemory(
-                            entity,
-                            string.Join(" ", entity.GetPropertyValues(typeMetadata.NamingProperties)));
+                        //await _ragService.{__}(
+                        //    entity,
+                        //    string.Join(" ", entity.GetPropertyValues(typeMetadata.NamingProperties)));
                     }
                 }
                 catch (Exception ex)
