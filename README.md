@@ -23,6 +23,7 @@ This hackathon will challenge you and your team to launch a POC of a chat interf
 - .NET 7 SDK
 - Docker Desktop
 - Azure CLI 2.49.0
+- Helm v3.11.1 or greater - https://helm.sh/ (for AKS)
 - Subscription with access to the Azure OpenAI Service. Start here to [Request Access to Azure OpenAI Service](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu)
 
 ## Setting up your development environment
@@ -43,10 +44,10 @@ git checkout main
 
 1. Open the PowerShell command line and navigate to the directory where you cloned the repo.
 2. Navigate into the `starter-artifacts\code\VectorSearchAiAssistant` folder.
-3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into Azure Container Apps (ACA), and import data into Cosmos. 
+3. Run the following PowerShell script to provision the infrastructure and deploy the API and frontend. Provide the name of a NEW resource group that will be created. This will provision all of the required infrastructure, deploy the API and web app services into Azure Kubernetes Service (AKS) if using the deployAks flag below or Azure Container Apps (ACA), and import data into Cosmos DB. 
 
 ```pwsh
-./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id>
+./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id> -deployAks 1
 ```
 
 >**NOTE**:
@@ -61,23 +62,24 @@ git checkout main
 >```pwsh
 >-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> -openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
 >```
->In case you will defer the Open AI deployment to the script, make sure have enough TPM (Tokens Per Minute (thousands)) quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
+>In case you will defer the Open AI deployment to the script, make sure have enough Tokens Per Minute (TPM) in thousands quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
 
 >If using your own Azure OpenAI account, it will be necessary to update the appsettings.json file in the `ChatServiceWebApi` project to use the model deployment names used in your existing Azure OpenAI account. See **Configure Local Settings section below** for more details.
 
 ### Decide on the containerization approach
 
 The deployment script supports two types of containerization:
-- [Azure Container Apps - ACA](https://azure.microsoft.com/products/container-apps) - this is default option. It allows you to deploy containerized applications without having to manage the underlying infrastructure, thus being the easiest option to get started with.
 - [Azure Kubernetes Service - AKS](https://azure.microsoft.com/services/kubernetes-service) - this option allows you to deploy the application into an AKS cluster. This option is more complex to set up, but it provides more flexibility and control over the deployment. To use AKS, pass the following parameter to the deployment script:
     ```pwsh
     -deployAks $true
     ```
-For the purpose of this hackathon, we recommend using Azure Container Apps. Depending on your preference, you can choose to use AKS instead.
+- [Azure Container Apps - ACA](https://azure.microsoft.com/products/container-apps) - this option allows you to deploy containerized applications without having to manage the underlying infrastructure and thus is an easier option to get started with.
+
+For the purpose of this hackathon, you can whatever your preference is, either AKS or ACA.
 
 >**NOTE**:
 >
->For the reminder of this hackathon, please interpret any documentation references to `AKS` as `ACA` if you chose to use Azure Container Apps (and viceversa).
+>For the reminder of this hackathon, please interpret any documentation references to `AKS` as `ACA` if you chose to use Azure Container Apps (and vice-versa).
 
 ### Verify initial deployment
 
@@ -110,7 +112,7 @@ After the deployment is complete the following Azure services will be deployed.
 - Azure Cosmos DB
 - Azure Cognitive Search
 - Azure Container Apps (or AKS) 
-- Azure Storage (*not pictured*)
+- Azure Storage
 - Azure Networking (*not pictured*)
 
 <p align="center">
