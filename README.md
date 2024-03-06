@@ -50,21 +50,18 @@ git checkout main
 ./scripts/Starter-Deploy.ps1  -resourceGroup <resource-group-name> -location <location> -subscription <subscription-id> -deployAks 1
 ```
 
->**NOTE**:
->
->If `<resource-group-name>` already exists, your user must have `Owner` permissions on the resource group.
->If `<resource-group-name>` does not exist exists, the deployment script will create it. In this case, your user must have `Owner` permissions on the subscription in which the resource group will be created.
+> [!NOTE]:
+> If `<resource-group-name>` already exists, your user must have `Owner` permissions on the resource group.
+> If `<resource-group-name>` does not exist exists, the deployment script will create it. In this case, your user must have `Owner` permissions on the subscription in which the resource group will be created.
 
->**NOTE**:
->
->By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
+> [!NOTE]
+> By default, the deployment script will attempt to create new Azure Open AI model deployments for the `gpt-35-turbo` and `text-embedding-ada-002` models. If you already have deployments for these models, you can skip the deployment by passing the following parameters to the script:
+> ```pwsh
+> -openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> -openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
+> ```
+> In case you will defer the Open AI deployment to the script, make sure have enough Tokens Per Minute (TPM) in thousands quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
 
->```pwsh
->-openAiName <open-ai-name> -openAiRg <open-ai-resource-group> -openAiCompletionsDeployment <completions-deployment-name> -openAiEmbeddingsDeployment <embeddings-deployment-name> -stepDeployOpenAi $false
->```
->In case you will defer the Open AI deployment to the script, make sure have enough Tokens Per Minute (TPM) in thousands quota available in your subscription. By default, the script will attempt to set a value of 120K for each deployment. In case you need to change this value, you can edit lines 22 and 29 in the `starter-artifacts\code\VectorSearchAiAssistant\scripts\Deploy-OpenAi.ps1` file.
-
->If using your own Azure OpenAI account, it will be necessary to update the appsettings.json file in the `ChatServiceWebApi` project to use the model deployment names used in your existing Azure OpenAI account. See **Configure Local Settings section below** for more details.
+> If using your own Azure OpenAI account, it will be necessary to update the appsettings.json file in the `ChatServiceWebApi` project to use the model deployment names used in your existing Azure OpenAI account. See **Configure Local Settings section below** for more details.
 
 ### Decide on the containerization approach
 
